@@ -37,4 +37,12 @@ BOOTCAMP-34
 <p>Hastaneler ve Sağlık Kuruluşları: Randevu sıkışıklığını çözmek ve günlük hasta bakma kapasitesini artırmak isteyen kurumlar.</p> 
 <p>Hekimler / Doktorlar: Muayene sırasında veri girişiyle vakit kaybetmek istemeyen ve hastanın geçmiş bağlamına hızla erişmek isteyen sağlık profesyonelleri.</p> <p>Hastalar: Doğru polikliniği seçmekte zorlanan, muayene odasında stres sebebiyle şikayetlerini eksik anlatan tüm bireyler.</p> 
 
+ # 📋Product Backlog (6 Haftalık Sprint Planı)
+Projeyi hayata geçirmek için tasarlanan, teknik şartnamedeki takvime uygun önceliklendirilmiş iş listesi:
+🔹 Sprint 1: Altyapı & İlk Ajan (Hafta 1-2)
+<p>Task 1.1: GitHub reposunun public olarak ayağa kaldırılması ve README şablonunun oluşturulması.</p>
+<p></p>Task 1.2: Gemini 2.5 Flash API bağlantılarının backend projesine entegre edilmesi.</p>  
+<p></p>Task 1.3: Hastayı karşılayacak "Semptom Toplayıcı Ajan (Patient-Facing Agent)" prompt mimarisinin tasarlanması ve test edilmesi.</p>
+
+
 
