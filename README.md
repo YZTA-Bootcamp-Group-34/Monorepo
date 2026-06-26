@@ -29,7 +29,7 @@ BOOTCAMP-34
 # **🛠️ Ürün Özellikleri**
 <p>Doğal Dille Akıllı Sevk & MHRS Yönetimi: Hastanın "sol kolum sızlıyor" gibi kendi cümlelerini analiz ederek en doğru polikliniği belirler ve otomatik randevuya yönlendirir.</p> 
 <p>SOAP Formatında Hekim Ön Bilgilendirme Paneli: Toplanan dağınık verileri tıbbi terminolojiye çevirerek hekimin ekranına standart bir Klinik Ön Anamnez Raporu olarak düşürür. </p> 
-<p>Uzun Süreli Medikal Hafıza (Vector Memory): Hastanın geçmiş şikayetleri ile güncel semptomları arasında "Cosine Similarity" kullanarak bağlamsal ilişkiler kurar ve hekime kritik uyarılar üretir.</p> 
+<p>Uzun Süreli Medikal Hafıza : Hastanın geçmiş şikayetleri ile güncel semptomları arasında "Cosine Similarity" kullanarak bağlamsal ilişkiler kurar ve hekime kritik uyarılar üretir.</p> 
 <p>Proaktif Taburcu Sonrası Takip: Muayene sonrasında hastayı otonom takibe alarak periyodik semptom sorgulaması yapar ve anomali durumunda hekimi uyarır.</p> 
 
 
