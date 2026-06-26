@@ -26,7 +26,7 @@ BOOTCAMP-34
 <p>PreClinic, modern sağlık sistemlerinde hekimlerin veri giriş yükünü azaltan ve hastaların semptomlarını doğru aktaramamasından kaynaklanan zaman kayıplarını çözen otonom bir klinik asistan platformudur. Hasta ile hekim arasındaki veri bariyerini ortadan kaldırarak, hastanın doğal dildeki dağınık ifadelerini uluslararası geçerliliğe sahip ICD-10 standartlarına uyumlu, yapılandırılmış tıbbi verilere dönüştürür.</p>
 
 
-# **🛠️ Ürün Özellikleri **
+# 🛠️ Ürün Özellikleri
 <p>Doğal Dille Akıllı Sevk & MHRS Yönetimi: Hastanın "sol kolum sızlıyor" gibi kendi cümlelerini analiz ederek en doğru polikliniği belirler ve otomatik randevuya yönlendirir.</p> 
 <p>SOAP Formatında Hekim Ön Bilgilendirme Paneli: Toplanan dağınık verileri tıbbi terminolojiye çevirerek hekimin ekranına standart bir Klinik Ön Anamnez Raporu olarak düşürür. </p> 
 <p>Uzun Süreli Medikal Hafıza (Vector Memory): Hastanın geçmiş şikayetleri ile güncel semptomları arasında "Cosine Similarity" kullanarak bağlamsal ilişkiler kurar ve hekime kritik uyarılar üretir.</p> 
