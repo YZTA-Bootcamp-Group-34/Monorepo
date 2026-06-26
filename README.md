@@ -35,7 +35,7 @@ BOOTCAMP-34
 
 # **🤖 Hedef Kitlemiz**
 <p>Hastaneler ve Sağlık Kuruluşları: Randevu sıkışıklığını çözmek ve günlük hasta bakma kapasitesini artırmak isteyen kurumlar.</p> 
-<p>Hekimler / Doktorlar: Muayene sırasında veri girişiyle vakit kaybetmek istemeyen ve hastanın geçmiş bağlamına hızla erişmek isteyen sağlık profesyonelleri.</p> <p>Hastalar: Doğru polikliniği seçmekte zorlanan, muayene odasında stres sebebiyle şikayetlerini eksik anlatan tüm bireyler.</p> 
+<p>Doktorlar: Muayene sırasında veri girişiyle vakit kaybetmek istemeyen ve hastanın geçmiş bağlamına hızla erişmek isteyen sağlık profesyonelleri.</p> <p>Hastalar: Doğru polikliniği seçmekte zorlanan, muayene odasında stres sebebiyle şikayetlerini eksik anlatan tüm bireyler.</p> 
 
  # 📋Product Backlog (6 Haftalık Sprint Planı)
 <p>Projeyi hayata geçirmek için tasarlanan, teknik şartnamedeki takvime uygun önceliklendirilmiş iş listesi:</p>
