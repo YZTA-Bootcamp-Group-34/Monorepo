@@ -42,7 +42,19 @@ BOOTCAMP-34
 🔹 Sprint 1: Altyapı & İlk Ajan (Hafta 1-2)
 <p>Task 1.1: GitHub reposunun public olarak ayağa kaldırılması ve README şablonunun oluşturulması.</p>
 <p></p>Task 1.2: Gemini 2.5 Flash API bağlantılarının backend projesine entegre edilmesi.</p>  
-<p></p>Task 1.3: Hastayı karşılayacak "Semptom Toplayıcı Ajan (Patient-Facing Agent)" prompt mimarisinin tasarlanması ve test edilmesi.</p>
+<p></p>Task 1.3: Hastayı karşılayacak "Semptom Toplayıcı Ajan" prompt mimarisinin tasarlanması ve test edilmesi.</p>
+
+
+🔹 Sprint 2: RAG & Medikal Çeviri Entegrasyonu (Hafta 3-4)
+<p>Task 2.1: Sağlık Bakanlığı ICD-10 PDF dokümanının parse edilerek vektör veritabanına gömülmesi.</p> 
+<p>Task 2.2: "Medikal Tercüme ve Yapılandırma Ajanı " geliştirilmesi; çıktıların USVS standartlarında yapılandırılmış JSON modeline dönüştürülmesi.</p>
+<p>Task 2.3: Kısa ve uzun süreli hafıza yönetim mekanizmalarının (Short-term & Long-term Vector Memory) kurulması.</p>
+
+
+🔹 Sprint 3: Arayüz, Deployment & Kapanış (Hafta 5-6)
+<p>Task 3.1: Hasta sohbet ekranı ve Hekim Dashboard arayüzlerinin Flutter ile geliştirilmesi. </p> 
+<p>Task 3.2: Geliştirilen MVP'nin Vercel veya Render üzerinde canlıya alınarak test edilmesi. </p> 
+<p>Task 3.3: Projenin vizyonunu ve teknik derinliğini anlatan 3 dakikalık YouTube tanıtım videosunun çekilmesi ve son teslim formunun doldurulması.</p> 
 
 
 
