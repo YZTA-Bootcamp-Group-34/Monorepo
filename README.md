@@ -1,4 +1,4 @@
-# PreClinic
+<img width="1516" height="761" alt="image" src="https://github.com/user-attachments/assets/acc8bbdf-91e4-46bb-9851-6d61ef863934" /># PreClinic
 "Yapay Zeka ve Teknoloji Akademisi" bünyesinde "BOOTCAMP34" takımı olarak, mezuniyet bootcamp'i için hazırladığımız "Sağlık Teması: PreClinic" projemiz bu repo içinde yer almaktadır.
 
 # **📌Takım İsmi**
@@ -51,9 +51,16 @@ BOOTCAMP-34
 **Backlog ve Görev Seçim Mantığı:** İlk sprint, uygulamanın tasarım dilini oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır.
 
 
-
 **Daily Scrum (Günlük Toplantılar):**
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
+
+**Sprint board update: Sprint board screenshot:**
+Trello Linkimiz:https://trello.com/invite/b/6a4803339c72c94c17004040/ATTI59563a330b005374347a33f751b27ed55D008F52/my-trello-board
+<img width="600" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/256886a0dab7a470efac7873ab8cd14328059259/hastapanelifigma.png" style="margin-right: 20px; margin-bottom: 10px;">
+
+
+
+
 
 
 **Toplantı Kayıtları:** 
