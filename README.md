@@ -48,7 +48,7 @@ BOOTCAMP-34
 
 **Puan Tamamlama Mantığı:** Proje boyunca tamamlanması gereken toplam 300 puanlık backlog bulunmaktadır. 3 sprinte bölündüğünde ilk sprintin 100 ile başlaması gerektiği kararlaştırıldı.
 
-**Backlog ve Görev Seçim Mantığı:** İlk sprint, uygulamanın tasarım dilini (Design System) oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır.
+**Backlog ve Görev Seçim Mantığı:** İlk sprint, uygulamanın tasarım dilini oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır.
 
 
 
@@ -73,8 +73,8 @@ Sprint sonunda Figma üzerinde başarıyla tamamlanan ve "Yazılıma Hazır" kon
 
 
 **PreClinic Mobil UI/UX Tasarım Çıktıları:**
-Design System & Style Guide: Renk paleti (sağlık ve güven veren asistan tonları), tipografi, butonlar ve input alanları.
-Hasta Semptom Giriş Ekranı (Doğal Dil Akışı): Hastanın "Başım çok ağrıyor, ateş hissim var" gibi dağınık ifadelerini girebildiği akıllı chatbot/asistan arayüzü.
+Tasarım Sistemi ve Stil Kılavuzu: Renk paleti (sağlık ve güven veren asistan tonları), tipografi, butonlar ve input alanları.
+Hasta Semptom Giriş Ekranı: Hastanın "Başım çok ağrıyor, ateş hissim var" gibi dağınık ifadelerini girebildiği akıllı chatbot/asistan arayüzü.
 Hekim İnceleme Paneli (ICD-10 Output): Yapay zekanın dönüştürdüğü yapılandırılmış tıbbi verilerin ve ICD-10 kodlarının hekim tarafından onaylandığı minimalist ve göz yormayan mobil dashboard arayüzü.
 
 **Sprint Review:**
