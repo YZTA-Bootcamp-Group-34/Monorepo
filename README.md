@@ -46,7 +46,7 @@ Tahmin Edilen Sprint Puanı: 100 Puan (Toplam 300 puanlık UI/UX backlog'unun il
 Backlog ve Görev Seçim Mantığı: İlk sprint, uygulamanın tasarım dilini (Design System) oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır.
 
 
-### Daily Scrum (Günlük Toplantılar)
+**Daily Scrum (Günlük Toplantılar)**
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
 
 # Toplantı Kayıtları: Daily Scrum ekran görüntüleri ve chat geçmişleri Sohbet Klasöründe toplanmıştır.
