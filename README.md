@@ -57,7 +57,7 @@ User Story Düzeni: Kullanıcı hikayeleri doğrudan Product Backlog öğelerini
 
 
 **Toplantı Kayıtları:** 
-Daily Scrum ekran görüntüleri ve chat geçmişleri Sohbet Klasöründe toplanmıştır.
+Daily Scrum ekran görüntüleri ve chat geçmişleri SOHBET RESİMLERİ Klasöründe toplanmıştır
 
 
 # **Ürün Durumu**
