@@ -6,7 +6,7 @@
 BOOTCAMP-34
 
 # **👾Takım Logosu**
-/*<img width="500" height="500" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/main/logo_bootcamp.png">*/
+'<img width="500" height="500" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/main/logo_bootcamp.png">'
 <img width="500" height="500" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/main/logo2.png">
 
 
