@@ -38,7 +38,6 @@ BOOTCAMP-34
 <p>Doktorlar: Muayene sırasında veri girişiyle vakit kaybetmek istemeyen ve hastanın geçmiş bağlamına hızla erişmek isteyen sağlık profesyonelleri.</p> <p>Hastalar: Doğru polikliniği seçmekte zorlanan, muayene odasında stres sebebiyle şikayetlerini eksik anlatan tüm bireyler.</p> 
 
  # 📋Product Backlog 
-<p>Projeyi hayata geçirmek için tasarlanan, teknik şartnamedeki takvime uygun önceliklendirilmiş iş listesi:</p>
 
 **🔹 Sprint 1 Raporu: PreClinic UI/UX Tasarım Süreci**
 
