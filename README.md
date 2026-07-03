@@ -58,6 +58,7 @@ User Story Düzeni: Kullanıcı hikayeleri doğrudan Product Backlog öğelerini
 
 **Toplantı Kayıtları:** 
 Daily Scrum ekran görüntüleri ve chat geçmişleri SOHBET RESİMLERİ Klasöründe toplanmıştır.
+
 Dosya linki:"https://github.com/YZTA-Bootcamp-Group-34/Monorepo/tree/871d06ea573eb72324a458983d88293659868371/SOHBET%20RES%C4%B0MLER%C4%B0"
 
 
