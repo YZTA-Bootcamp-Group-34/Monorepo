@@ -55,9 +55,8 @@ BOOTCAMP-34
 **Daily Scrum (Günlük Toplantılar):**
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
 
-**Sprint board update: Sprint board screenshot:**
-Trello Linkimiz:https://trello.com/invite/b/6a4803339c72c94c17004040/ATTI59563a330b005374347a33f751b27ed55D008F52/my-trello-board
-<img width="200" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/6276d59efa40f452c11108544886d3323085343d/trello.png" style="margin-right: 20px; margin-bottom: 10px;">
+**Sprint board update: Sprint board screenshot:**:
+Proje yönetim sürecimizi ve görev dağılımlarımızı takip ettiğimiz Trello panomuza ulaşmak için [Tıklayınız](https://trello.com/invite/b/6a4803339c72c94c17004040/ATTI59563a330b005374347a33f751b27ed55D008F52/my-trello-board).
 
 
 
