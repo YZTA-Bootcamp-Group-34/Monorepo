@@ -1,4 +1,4 @@
-# 🫀PreClinic🫀
+# PreClinic
 "Yapay Zeka ve Teknoloji Akademisi" bünyesinde "BOOTCAMP34" takımı olarak, mezuniyet bootcamp'i için hazırladığımız "Sağlık Teması: PreClinic" projemiz bu repo içinde yer almaktadır.
 
 # **📌Takım İsmi**
