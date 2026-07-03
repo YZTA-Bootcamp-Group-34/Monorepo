@@ -1,4 +1,4 @@
-<img width="1516" height="761" alt="image" src="https://github.com/user-attachments/assets/acc8bbdf-91e4-46bb-9851-6d61ef863934" /># PreClinic
+PreClinic
 "Yapay Zeka ve Teknoloji Akademisi" bünyesinde "BOOTCAMP34" takımı olarak, mezuniyet bootcamp'i için hazırladığımız "Sağlık Teması: PreClinic" projemiz bu repo içinde yer almaktadır.
 
 # **📌Takım İsmi**
