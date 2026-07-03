@@ -6,7 +6,6 @@
 BOOTCAMP-34
 
 # **👾Takım Logosu**
-'<img width="500" height="500" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/main/logo_bootcamp.png">'
 <img width="500" height="500" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/main/logo2.png">
 
 
@@ -56,6 +55,12 @@ BOOTCAMP-34
 <p>Task 3.1: Hasta sohbet ekranı ve Hekim Dashboard arayüzlerinin Flutter ile geliştirilmesi. </p> 
 <p>Task 3.2: Geliştirilen MVP'nin Vercel veya Render üzerinde canlıya alınarak test edilmesi. </p> 
 <p>Task 3.3: Projenin vizyonunu ve teknik derinliğini anlatan 3 dakikalık YouTube tanıtım videosunun çekilmesi ve son teslim formunun doldurulması.</p> 
+
+
+
+ # 📈 Proje Bağlantıları
+
+
 
 
 
