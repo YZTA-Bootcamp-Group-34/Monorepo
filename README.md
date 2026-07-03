@@ -21,7 +21,7 @@ BOOTCAMP-34
 ❤️ Sağlık Teması
 
 # **😎Proje İsmi**
-🫀PreClinic🫀
+-PreClinic-
 
 # **🩺 Proje Açıklaması**
 <p>PreClinic, modern sağlık sistemlerinde hekimlerin veri giriş yükünü azaltan ve hastaların semptomlarını doğru aktaramamasından kaynaklanan zaman kayıplarını çözen otonom bir klinik asistan platformudur. Hasta ile hekim arasındaki veri bariyerini ortadan kaldırarak, hastanın doğal dildeki dağınık ifadelerini uluslararası geçerliliğe sahip ICD-10 standartlarına uyumlu, yapılandırılmış tıbbi verilere dönüştürür.</p>
