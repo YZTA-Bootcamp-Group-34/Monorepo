@@ -84,6 +84,7 @@ Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
 
 **Sprint Retrospective:**
 Ekip, sonraki sprintlerde tasarımın kalitesini artırmak ve yazılım aşamasına geçişi kolaylaştırmak adına iki çalışma grubuna ayrılmıştır:
+
 Grup 1(Tasarım Kalitesi):Esra Canpolat
 
 Grup 2(Yazılım Ekibi):Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
