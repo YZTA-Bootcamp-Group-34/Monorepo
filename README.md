@@ -52,7 +52,7 @@ Backlog ve Görev Seçim Mantığı: İlk sprint, uygulamanın tasarım dilini (
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
 
 
-**Toplantı Kayıtları: Daily Scrum ekran görüntüleri ve chat geçmişleri Sohbet Klasöründe toplanmıştır.**
+**Toplantı Kayıtları:** Daily Scrum ekran görüntüleri ve chat geçmişleri Sohbet Klasöründe toplanmıştır.
 
 **Ürün Durumu (Artifacts & Deliverables)**
 Sprint sonunda Figma üzerinde başarıyla tamamlanan ve "Ready for Dev" (Yazılıma Hazır) konumuna getirilen ekranlar ve çıktılar:
