@@ -40,13 +40,13 @@ BOOTCAMP-34
  # 📋Product Backlog 
 <p>Projeyi hayata geçirmek için tasarlanan, teknik şartnamedeki takvime uygun önceliklendirilmiş iş listesi:</p>
 🔹 Sprint 1 Raporu: PreClinic UI/UX Tasarım Süreci
-### Sprint Notları
+Sprint Notları
 User Story Düzeni: Kullanıcı hikayeleri (User Stories) doğrudan Product Backlog öğelerinin içerisine gömülmüştür. Detaylar ve kabul kriterleri ilgili backlog öğesine tıklandığında görülebilir.
 Tahmin Edilen Sprint Puanı: 100 Puan (Toplam 300 puanlık UI/UX backlog'unun ilk aşaması).
 Backlog ve Görev Seçim Mantığı: İlk sprint, uygulamanın tasarım dilini (Design System) oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır.
 
 
-# Daily Scrum (Günlük Toplantılar)
+### Daily Scrum (Günlük Toplantılar)
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
 
 # Toplantı Kayıtları: Daily Scrum ekran görüntüleri ve chat geçmişleri Sohbet Klasöründe toplanmıştır.
