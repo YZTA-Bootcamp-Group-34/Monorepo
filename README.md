@@ -82,9 +82,12 @@ Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
 
 **Sprint Retrospective:**
 Ekip, sonraki sprintlerde tasarımın kalitesini artırmak ve yazılım aşamasına geçişi kolaylaştırmak adına iki çalışma grubuna ayrılmıştır:
-Grup 1(Tasarum Kalitesi):Esra Canpolat
+Grup 1(Tasarım Kalitesi):Esra Canpolat
+
 Grup 2(Yazılım Ekibi):Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
+
 Toplantıların belirli bir zaman aralığıyla gerçekleştirilmesi kararlaştırıldı.
+
 Üretim aşamasında görev alan ekip üyelerine gelecek bölümlerde ihtiyaç duyulabilecek assetlerin üretimi için listeler hazırlandı
 
 
