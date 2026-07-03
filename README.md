@@ -60,7 +60,7 @@ User Story Düzeni: Kullanıcı hikayeleri doğrudan Product Backlog öğelerini
 Daily Scrum ekran görüntüleri ve chat geçmişleri Sohbet Klasöründe toplanmıştır.
 
 
-# ***Ürün Durumu***
+# *Ürün Durumu*
 Sprint sonunda Figma üzerinde başarıyla tamamlanan ve "Ready for Dev" (Yazılıma Hazır) konumuna getirilen ekranlar ve çıktılar:
 
 
