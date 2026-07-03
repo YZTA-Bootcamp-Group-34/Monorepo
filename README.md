@@ -37,24 +37,48 @@ BOOTCAMP-34
 <p>Hastaneler ve Sağlık Kuruluşları: Randevu sıkışıklığını çözmek ve günlük hasta bakma kapasitesini artırmak isteyen kurumlar.</p> 
 <p>Doktorlar: Muayene sırasında veri girişiyle vakit kaybetmek istemeyen ve hastanın geçmiş bağlamına hızla erişmek isteyen sağlık profesyonelleri.</p> <p>Hastalar: Doğru polikliniği seçmekte zorlanan, muayene odasında stres sebebiyle şikayetlerini eksik anlatan tüm bireyler.</p> 
 
- # 📋Product Backlog (6 Haftalık Sprint Planı)
+ # 📋Product Backlog 
 <p>Projeyi hayata geçirmek için tasarlanan, teknik şartnamedeki takvime uygun önceliklendirilmiş iş listesi:</p>
-🔹 Sprint 1: Altyapı & İlk Ajan (Hafta 1-2)
-<p>Task 1.1: GitHub reposunun public olarak ayağa kaldırılması ve README şablonunun oluşturulması.</p>
-<p></p>Task 1.2: Gemini 2.5 Flash API bağlantılarının backend projesine entegre edilmesi.</p>  
-<p></p>Task 1.3: Hastayı karşılayacak "Semptom Toplayıcı Ajan" prompt mimarisinin tasarlanması ve test edilmesi.</p>
+🔹 Sprint 1 Raporu: PreClinic UI/UX Tasarım Süreci
+Sprint Notları
+User Story Düzeni: Kullanıcı hikayeleri (User Stories) doğrudan Product Backlog öğelerinin içerisine gömülmüştür. Detaylar ve kabul kriterleri ilgili backlog öğesine tıklandığında görülebilir.
+Tahmin Edilen Sprint Puanı: 100 Puan (Toplam 300 puanlık UI/UX backlog'unun ilk aşaması).
+Backlog ve Görev Seçim Mantığı: İlk sprint, uygulamanın tasarım dilini (Design System) oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır.
 
 
-🔹 Sprint 2: RAG & Medikal Çeviri Entegrasyonu (Hafta 3-4)
-<p>Task 2.1: Sağlık Bakanlığı ICD-10 PDF dokümanının parse edilerek vektör veritabanına gömülmesi.</p> 
-<p>Task 2.2: "Medikal Tercüme ve Yapılandırma Ajanı " geliştirilmesi; çıktıların USVS standartlarında yapılandırılmış JSON modeline dönüştürülmesi.</p>
-<p>Task 2.3: Kısa ve uzun süreli hafıza yönetim mekanizmalarının (Short-term & Long-term Vector Memory) kurulması.</p>
+Daily Scrum (Günlük Toplantılar)
+İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
+
+Toplantı Kayıtları: Daily Scrum ekran görüntüleri ve chat geçmişleri Sohbet Klasöründe toplanmıştır.
+
+Ürün Durumu (Artifacts & Deliverables)
+Sprint sonunda Figma üzerinde başarıyla tamamlanan ve "Ready for Dev" (Yazılıma Hazır) konumuna getirilen ekranlar ve çıktılar:
 
 
-🔹 Sprint 3: Arayüz, Deployment & Kapanış (Hafta 5-6)
-<p>Task 3.1: Hasta sohbet ekranı ve Hekim Dashboard arayüzlerinin Flutter ile geliştirilmesi. </p> 
-<p>Task 3.2: Geliştirilen MVP'nin Vercel veya Render üzerinde canlıya alınarak test edilmesi. </p> 
-<p>Task 3.3: Projenin vizyonunu ve teknik derinliğini anlatan 3 dakikalık YouTube tanıtım videosunun çekilmesi ve son teslim formunun doldurulması.</p> 
+
+
+
+PreClinic Mobil UI/UX Tasarım Çıktıları:
+Design System & Style Guide: Renk paleti (sağlık ve güven veren asistan tonları), tipografi, butonlar ve input alanları.
+Hasta Semptom Giriş Ekranı (Doğal Dil Akışı): Hastanın "Başım çok ağrıyor, ateş hissim var" gibi dağınık ifadelerini girebildiği akıllı chatbot/asistan arayüzü.
+Hekim İnceleme Paneli (ICD-10 Output): Yapay zekanın dönüştürdüğü yapılandırılmış tıbbi verilerin ve ICD-10 kodlarının hekim tarafından onaylandığı minimalist ve göz yormayan mobil dashboard arayüzü.
+
+Sprint Review (Sprint Değerlendirmesi)
+Görüşler ve Çıktılar: Tüm ekip Sprint 1 sonunda Figma üzerindeki yüksek sadakatli (High-Fidelity) prototipi inceledi ve test etti. Tasarlanan "Doğal dilden ICD-10 koduna dönüşüm" animasyonları ve veri görselleştirme kutuları (Bento Grid) ekip tarafından oldukça işlevsel ve modern bulundu. Hekim arayüzündeki minimalist yaklaşımın, hekimlerin veri giriş yükünü azaltma hedefini tam olarak karşıladığı onaylandı.
+
+Katılımcılar: Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça,
+
+Sprint Retrospective (Geleceğe Yönelik Kararlar)
+Ekip, sonraki sprintlerde tasarımın kalitesini artırmak ve yazılım aşamasına geçişi kolaylaştırmak adına iki çalışma grubuna ayrılmıştır:
+Grup 1(Tasarum Kalitesi):Esra Canpolat
+Grup 2(Yazılım Ekibi):Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
+Toplantıların belirli bir zaman aralığıyla gerçekleştirilmesi kararlaştırıldı.
+Üretim aşamasında görev alan ekip üyelerine gelecek bölümlerde ihtiyaç duyulabilecek assetlerin üretimi için listeler hazırlandı
+
+
+
+Gelecek Sprint Hazırlığı: Yazılım ekibinin doğrudan üretime başlayabilmesi için Figma bileşenlerinin (Components) isimlendirmeleri ve Auto Layout yapıları standardize edilmiştir.
+
 
 
 
