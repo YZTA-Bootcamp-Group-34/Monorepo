@@ -78,7 +78,7 @@ Hasta Semptom Giriş Ekranı (Doğal Dil Akışı): Hastanın "Başım çok ağr
 Hekim İnceleme Paneli (ICD-10 Output): Yapay zekanın dönüştürdüğü yapılandırılmış tıbbi verilerin ve ICD-10 kodlarının hekim tarafından onaylandığı minimalist ve göz yormayan mobil dashboard arayüzü.
 
 **Sprint Review:**
-Görüşler ve Çıktılar: Tüm ekip Sprint 1 sonunda Figma üzerindeki yüksek sadakatli (High-Fidelity) prototipi inceledi ve test etti. Tasarlanan "Doğal dilden ICD-10 koduna dönüşüm" animasyonları ve veri görselleştirme kutuları (Bento Grid) ekip tarafından oldukça işlevsel ve modern bulundu. Hekim arayüzündeki minimalist yaklaşımın, hekimlerin veri giriş yükünü azaltma hedefini tam olarak karşıladığı onaylandı.
+Görüşler ve Çıktılar: Tüm ekip Sprint 1 sonunda Figma üzerindeki yüksek sadakatli  prototipi inceledi ve test etti. Tasarlanan "Doğal dilden ICD-10 koduna dönüşüm" animasyonları ve veri görselleştirme kutuları ekip tarafından oldukça işlevsel ve modern bulundu. Hekim arayüzündeki minimalist yaklaşımın, hekimlerin veri giriş yükünü azaltma hedefini tam olarak karşıladığı onaylandı.
 
 **Katılımcılar:** 
 Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
