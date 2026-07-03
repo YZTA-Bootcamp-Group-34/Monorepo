@@ -65,6 +65,9 @@ SOHBET RESİMLERİ KLASÖRÜ LİNKİ :"https://github.com/YZTA-Bootcamp-Group-34
 # **Ürün Durumu**
 Sprint sonunda Figma üzerinde başarıyla tamamlanan ve "Ready for Dev" (Yazılıma Hazır) konumuna getirilen ekranlar ve çıktılar:
 <img width="500" height="500" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/cc61f3854cb0be9828a7293afbc587435296aa65/doktorpanelifigma.png">
+<img width="500" height="500" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/256886a0dab7a470efac7873ab8cd14328059259/hastapanelifigma.png">
+<img width="500" height="500" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/256886a0dab7a470efac7873ab8cd14328059259/figma.png">
+
 
 
 
