@@ -1,71 +1,24 @@
-# Cline's Memory Bank
+# Cline's Memory Bank - PreClinic Monorepo Hub
 
-I am Cline, an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task - this is not optional.
+This is the central entry point for PreClinic, an autonomous clinic assistant platform. PreClinic reduces diagnostic entry times for doctors and helps patients navigate clinical department routing using AI.
 
-## Memory Bank Structure
+## Memory Bank Directory Contents
 
-The Memory Bank consists of core files and optional context files, all in Markdown format. Files build upon each other in a clear hierarchy:
+We split our memory bank into separate files under `.clinerules/` for modularity and clarity:
 
-### Core Files (Required)
+1. **[Project Brief](file:///Users/ulascandemirbag/Development/Monorepo/.clinerules/projectbrief.md)**
+   - System requirements, targets, and core goals.
+   - Team structure and role definitions.
+2. **[Product Context](file:///Users/ulascandemirbag/Development/Monorepo/.clinerules/productContext.md)**
+   - The problems PreClinic solves: MHRS overloading, clinical administrative bloat, similarity history comparisons.
+   - Expected user experiences.
+3. **[System Patterns](file:///Users/ulascandemirbag/Development/Monorepo/.clinerules/systemPatterns.md)**
+   - Architecture overview: Mobile (Expo) + Web Dashboard (Next.js) connected to Python FastAPI Backend + SQLite.
+4. **[Tech Context](file:///Users/ulascandemirbag/Development/Monorepo/.clinerules/techContext.md)**
+   - Technologies, packages, frameworks, and visual styling/color tokens.
+5. **[Active Context](file:///Users/ulascandemirbag/Development/Monorepo/.clinerules/activeContext.md)**
+   - The focus of the current sprint: monorepo package creation and seeding.
+6. **[Progress](file:///Users/ulascandemirbag/Development/Monorepo/.clinerules/progress.md)**
+   - Built list, open checklist, and sprint tracking parameters.
 
-1. `projectbrief.md`
-   - Foundation document that shapes all other files
-   - Created at project start if it doesn't exist
-   - Defines core requirements and goals
-   - Source of truth for project scope
-
-2. `productContext.md`
-   - Why this project exists
-   - Problems it solves
-   - How it should work
-   - User experience goals
-
-3. `activeContext.md`
-   - Current work focus
-   - Recent changes
-   - Next steps
-   - Active decisions and considerations
-   - Important patterns and preferences
-   - Learnings and project insights
-
-4. `systemPatterns.md`
-   - System architecture
-   - Key technical decisions
-   - Design patterns in use
-   - Component relationships
-   - Critical implementation paths
-
-5. `techContext.md`
-   - Technologies used
-   - Development setup
-   - Technical constraints
-   - Dependencies
-   - Tool usage patterns
-
-6. `progress.md`
-   - What works
-   - What's left to build
-   - Current status
-   - Known issues
-   - Evolution of project decisions
-
-### Additional Context
-
-Create additional files/folders within memory-bank/ when they help organize:
-
-- Complex feature documentation
-- Integration specifications
-- API documentation
-- Testing strategies
-- Deployment procedures
-
-## Documentation Updates
-
-Memory Bank updates occur when:
-
-1. Discovering new project patterns
-2. After implementing significant changes
-3. When user requests with **update memory bank** (MUST review ALL files)
-4. When context needs clarification
-
-REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
+*Note: Please read the specific sub-files for comprehensive, deep technical details.*
