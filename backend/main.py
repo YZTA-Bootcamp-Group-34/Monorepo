@@ -1,5 +1,8 @@
 import os
 import json
+import jwt
+import bcrypt
+from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,7 +12,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 
 from .database import engine, Base, get_db
-from .models import Patient, Department, AppointmentHistory, MedicalHistoryItem, AISymptomFinding, AIProbability, AIAction
+from .models import User, DoctorProfile, Patient, Department, AppointmentHistory, MedicalHistoryItem, AISymptomFinding, AIProbability, AIAction
 
 # Load environment variables
 load_dotenv()
@@ -42,6 +45,200 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- JWT Configs & Helpers ---
+JWT_SECRET = "preclinic_super_secret_key_12345"
+JWT_ALGORITHM = "HS256"
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(days=7)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+def decode_access_token(token: str) -> Optional[dict]:
+    try:
+        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+    except Exception:
+        return None
+
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    try:
+        return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+    except Exception:
+        return False
+
+# --- Authentication Schemas ---
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    role: str  # "doctor" or "patient"
+    name: str
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class OnboardingRequest(BaseModel):
+    # For doctors
+    diploma_no: Optional[str] = None
+    branch: Optional[str] = None
+    bio: Optional[str] = None
+    # For patients
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    blood_type: Optional[str] = None
+    weight: Optional[float] = None
+    height: Optional[float] = None
+    chronic_conditions: Optional[str] = None
+
+# --- Authentication Endpoints ---
+@app.post("/api/auth/register")
+def register_user(req: RegisterRequest, db: Session = Depends(get_db)):
+    exists = db.query(User).filter(User.username == req.username).first()
+    if exists:
+        raise HTTPException(status_code=400, detail="Bu kullanıcı adı veya TC no zaten kayıtlı.")
+        
+    hashed = hash_password(req.password)
+    user = User(username=req.username, hashed_password=hashed, role=req.role)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    
+    if req.role == "doctor":
+        profile = DoctorProfile(user_id=user.id, name=req.name)
+        db.add(profile)
+    else:
+        profile = Patient(
+            user_id=user.id,
+            tc_no=req.username,
+            name=req.name,
+            age=0,
+            gender="",
+            blood_type="",
+            weight=0.0,
+            height=0.0,
+            chronic_conditions="",
+            status="RUTİN KONTROL",
+            criticality=0.0,
+            son_randevu="Kayıtlı Yeni Hasta"
+        )
+        db.add(profile)
+        
+    db.commit()
+    token = create_access_token({"user_id": user.id, "role": user.role})
+    return {"token": token, "role": user.role, "name": req.name}
+
+@app.post("/api/auth/login")
+def login_user(req: LoginRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == req.username).first()
+    if not user or not verify_password(req.password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Hatalı kullanıcı adı/TC No veya şifre.")
+        
+    name = "Kullanıcı"
+    if user.role == "doctor":
+        profile = db.query(DoctorProfile).filter(DoctorProfile.user_id == user.id).first()
+        if profile:
+            name = profile.name
+    else:
+        profile = db.query(Patient).filter(Patient.user_id == user.id).first()
+        if profile:
+            name = profile.name
+            
+    token = create_access_token({"user_id": user.id, "role": user.role})
+    return {"token": token, "role": user.role, "name": name}
+
+@app.get("/api/auth/me")
+def get_current_user_profile(token: str, db: Session = Depends(get_db)):
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Geçersiz token. Lütfen tekrar giriş yapın.")
+        
+    user_id = payload.get("user_id")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+        
+    profile_data = {}
+    if user.role == "doctor":
+        profile = db.query(DoctorProfile).filter(DoctorProfile.user_id == user.id).first()
+        if profile:
+            profile_data = {
+                "name": profile.name,
+                "diploma_no": profile.diploma_no,
+                "branch": profile.branch,
+                "bio": profile.bio,
+                "avatar_url": profile.avatar_url
+            }
+    else:
+        profile = db.query(Patient).filter(Patient.user_id == user.id).first()
+        if profile:
+            profile_data = {
+                "id": profile.id,
+                "name": profile.name,
+                "tc_no": profile.tc_no,
+                "age": profile.age,
+                "gender": profile.gender,
+                "blood_type": profile.blood_type,
+                "weight": profile.weight,
+                "height": profile.height,
+                "chronic_conditions": profile.chronic_conditions,
+                "referral_status": profile.referral_status,
+                "referral_date": profile.referral_date,
+                "referral_doctor": profile.referral_doctor
+            }
+            
+    return {"id": user.id, "username": user.username, "role": user.role, "profile": profile_data}
+
+@app.post("/api/auth/onboarding")
+def complete_onboarding(token: str, req: OnboardingRequest, db: Session = Depends(get_db)):
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Geçersiz token.")
+        
+    user_id = payload.get("user_id")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı.")
+        
+    if user.role == "doctor":
+        profile = db.query(DoctorProfile).filter(DoctorProfile.user_id == user.id).first()
+        if not profile:
+            profile = DoctorProfile(user_id=user.id)
+            db.add(profile)
+        if req.diploma_no:
+            profile.diploma_no = req.diploma_no
+        if req.branch:
+            profile.branch = req.branch
+        if req.bio:
+            profile.bio = req.bio
+        db.commit()
+    else:
+        profile = db.query(Patient).filter(Patient.user_id == user.id).first()
+        if not profile:
+            raise HTTPException(status_code=404, detail="Hasta profili bulunamadı.")
+        if req.age is not None:
+            profile.age = req.age
+        if req.gender:
+            profile.gender = req.gender
+        if req.blood_type:
+            profile.blood_type = req.blood_type
+        if req.weight is not None:
+            profile.weight = req.weight
+        if req.height is not None:
+            profile.height = req.height
+        if req.chronic_conditions is not None:
+            profile.chronic_conditions = req.chronic_conditions
+        db.commit()
+        
+    return {"success": True, "message": "Onboarding başarıyla tamamlandı."}
 
 # --- Pydantic Schemas ---
 

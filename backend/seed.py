@@ -1,5 +1,10 @@
+import bcrypt
 from .database import engine, Base, SessionLocal
-from .models import Patient, Department, AppointmentHistory, MedicalHistoryItem, AISymptomFinding, AIProbability, AIAction
+from .models import User, DoctorProfile, Patient, Department, AppointmentHistory, MedicalHistoryItem, AISymptomFinding, AIProbability, AIAction
+
+def hash_password(password: str) -> str:
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 def seed_db():
     # Recreate database tables
@@ -8,9 +13,43 @@ def seed_db():
 
     db = SessionLocal()
     try:
+        # Seed Authentication Users
+        hashed_pw = hash_password("123456")
+        
+        u_esra = User(id=1, username="12345678901", hashed_password=hashed_pw, role="patient")
+        u_ulas = User(id=2, username="98765432109", hashed_password=hashed_pw, role="patient")
+        u_alper = User(id=3, username="45678912300", hashed_password=hashed_pw, role="patient")
+        
+        u_dr_alper = User(id=4, username="dr.alper@preclinic.com", hashed_password=hashed_pw, role="doctor")
+        u_dr_yusuf = User(id=5, username="dr.yusuf@preclinic.com", hashed_password=hashed_pw, role="doctor")
+        
+        db.add_all([u_esra, u_ulas, u_alper, u_dr_alper, u_dr_yusuf])
+        db.commit()
+
+        # Seed Doctor Profiles
+        dp_alper = DoctorProfile(
+            user_id=4,
+            name="Dr. Alper Yılmaz",
+            diploma_no="D-9812",
+            branch="Kardiyoloji Polikliniği",
+            avatar_url="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150",
+            bio="Kardiyovasküler tıp uzmanı, 12 yıllık klinik tecrübe."
+        )
+        dp_yusuf = DoctorProfile(
+            user_id=5,
+            name="Dr. Yusuf Kurt",
+            diploma_no="D-7734",
+            branch="Dermatoloji Polikliniği",
+            avatar_url="https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=150",
+            bio="Deri ve zührevi hastalıklar uzmanı, dermatolojik cerrahi alanında uzmanlaşmış."
+        )
+        db.add_all([dp_alper, dp_yusuf])
+        db.commit()
+
         # 1. Seed Patients
         p1 = Patient(
             id=1,
+            user_id=1,
             tc_no="12345678901",
             name="Esra Canpolat",
             age=23,
@@ -26,6 +65,7 @@ def seed_db():
         )
         p2 = Patient(
             id=2,
+            user_id=2,
             tc_no="98765432109",
             name="Ulaş Can",
             age=45,
@@ -41,6 +81,7 @@ def seed_db():
         )
         p3 = Patient(
             id=3,
+            user_id=3,
             tc_no="45678912300",
             name="Alper Duman",
             age=68,

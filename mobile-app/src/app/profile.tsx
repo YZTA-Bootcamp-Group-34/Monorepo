@@ -10,10 +10,21 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProfileScreen() {
   const [painLevel, setPainLevel] = useState(5);
   const [fever, setFever] = useState("36.5");
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("user_token");
+      await AsyncStorage.removeItem("user_onboarding_complete");
+      alert("Çıkış yapıldı. Giriş ekranına dönmek için lütfen uygulamayı kapatıp açın.");
+    } catch (err) {
+      alert("Çıkış yapılırken hata oluştu.");
+    }
+  };
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [surveyCompleted, setSurveyCompleted] = useState(false);
@@ -193,7 +204,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Log Out Button */}
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Ionicons name="log-out-outline" size={18} color="#BA1A1A" />
           <Text style={styles.logoutText}>Çıkış Yap</Text>
         </TouchableOpacity>

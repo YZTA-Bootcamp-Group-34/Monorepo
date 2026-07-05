@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   Search, 
   Bell, 
@@ -41,10 +42,20 @@ interface Appointment {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+      }
+    }
+  }, [router]);
 
   // Default fallback data matching Figma screenshots exactly
   const mockPatients: Patient[] = [
@@ -177,11 +188,23 @@ export default function Dashboard() {
     return false;
   });
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("doctor_name");
+    router.push("/login");
+  };
+
   return (
     <div className="p-8 flex flex-col gap-8 w-full max-w-7xl mx-auto">
       {/* Top Header */}
       <header className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-navy-dark">Hasta Yönetimi</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-navy-dark">Hasta Yönetimi</h1>
+          <span className="text-xs text-slate-dark block mt-0.5 font-medium">
+            Hoş geldiniz, {typeof window !== "undefined" ? localStorage.getItem("doctor_name") || "Hekim" : "Hekim"}
+          </span>
+        </div>
         <div className="flex items-center gap-4">
           {/* Search bar */}
           <div className="relative">

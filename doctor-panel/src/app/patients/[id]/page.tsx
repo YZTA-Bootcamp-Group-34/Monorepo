@@ -174,6 +174,14 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
   };
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+    }
+
     const fetchPatientDetails = async () => {
       try {
         const res = await fetch(`http://localhost:8000/api/patients/${patientId}`);
@@ -192,7 +200,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
     };
 
     fetchPatientDetails();
-  }, [patientId]);
+  }, [patientId, router]);
 
   if (loading) {
     return (

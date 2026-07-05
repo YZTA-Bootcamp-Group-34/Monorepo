@@ -6,6 +6,7 @@ class Patient(Base):
     __tablename__ = "patients"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     tc_no = Column(String, unique=True, index=True)
     name = Column(String)
     age = Column(Integer)
@@ -22,6 +23,9 @@ class Patient(Base):
     referral_date = Column(String, nullable=True)
     referral_doctor = Column(String, nullable=True)
     followup_status = Column(String, nullable=True)
+    email = Column(String, unique=True, index=True, nullable=True)
+    hashed_password = Column(String, nullable=True)
+    onboarded = Column(Boolean, default=False)
 
     medical_history = relationship("MedicalHistoryItem", back_populates="patient", cascade="all, delete-orphan")
     symptom_findings = relationship("AISymptomFinding", back_populates="patient", cascade="all, delete-orphan")
@@ -91,3 +95,25 @@ class AIAction(Base):
     required_tests = Column(String)  # comma separated e.g. "Üst GİS Endoskopisi, H. Pylori Antijen Testi, Karın USG"
 
     patient = relationship("Patient", back_populates="action")
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)  # Email for doctors, TC No for patients
+    hashed_password = Column(String)
+    role = Column(String)  # "doctor" or "patient"
+    created_at = Column(String, nullable=True)
+
+class DoctorProfile(Base):
+    __tablename__ = "doctor_profiles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    name = Column(String)
+    diploma_no = Column(String, nullable=True)
+    branch = Column(String, nullable=True)
+    avatar_url = Column(String, nullable=True)
+    bio = Column(String, nullable=True)
+    
+    user = relationship("User", backref="doctor_profile")

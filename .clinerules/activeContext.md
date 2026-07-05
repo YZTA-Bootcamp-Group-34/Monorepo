@@ -1,20 +1,21 @@
-# Active Context: PreClinic Setup
+# Active Context: PreClinic Phase 5 Setup
 
 ## Current Focus
-All roadmap phases (**FAZ 1 - FAZ 4**) have been successfully completed, integrated, and verified!
-The PreClinic system now represents a fully stateful, end-to-end connected health monorepo:
-1. Patient app (Expo) -> uses AI symptom analysis, books polyclinic slots, gets doctor-confirmed notifications, and reports postoperative followup surveys.
-2. Backend (FastAPI) -> handles SQLite operations, runs Google Gemini LLM dialogs, performs Cosine Similarity calculations with medical synonym expansions, and detects clinical follow-up alarm thresholds.
-3. Doctor panel (Next.js) -> lists patients, flags active alerts, updates sevk routing statuses, and highlights critical postoperative alarms in real-time.
+We are starting **FAZ 5: Kimlik Doğrulama (Auth) & Onboarding Süreçleri**.
+The objective is to implement a robust, production-ready JWT authentication system on the FastAPI backend, and design visual register, login, and onboarding wizard flows for both Next.js doctor-panel and Expo mobile patient app.
 
-## Recent Changes
-- Completed **FAZ 4 (Proaktif Taburcu Sonrası Takip Sistemi)**.
-- Added `POST /api/patients/{id}/followup` endpoint in FastAPI backend to analyze pain levels, fever levels, and text symptoms.
-- Integrated postoperative feedback surveys on mobile client profile tab, communicating with the backend.
-- Updated Doctor panel dashboard to flash critical `KRİTİK TAKİP` alarms and highlight specific alarm warnings on patient lists.
+## Recent Decisions
+- **Unified Auth Backend:** We will introduce a `User` table to SQLite, representing both patients and doctors with a `role` field ("doctor" or "patient").
+- **Tokens:** Authentication will utilize JWT bearer tokens stored securely (in local storage / Expo secure store).
+- **Onboarding:**
+  - Next.js onboarding allows doctors to set their medical diploma, clinic branch, and description.
+  - Expo onboarding introduces welcome slides and prompts patients for biometric details (blood type, weight, height, age) and chronic conditions, storing them in the `patients` table.
 
-## Verification
-- Clean compilation checked and succeeded:
-  - Next.js: `npm run build` completes with zero errors.
-  - React Native (Expo): `npx tsc --noEmit` checks out successfully with zero type errors.
-  - Python: `py_compile` checks completed successfully.
+## Immediate Tasks
+1. Build backend authentication:
+   - Install cryptography packages (`pyjwt`, `passlib` with `bcrypt`).
+   - Define `User` and `DoctorProfile` models in `backend/models.py`.
+   - Update `seed.py` to create default doctor and patient users with hashed passwords.
+   - Implement `/api/auth/register`, `/api/auth/login`, and `/api/auth/me` endpoints in `backend/main.py`.
+2. Connect doctor web panel with JWT auth screens (`/login`, `/register`, `/onboarding`).
+3. Connect Expo mobile client with auth screens, onboarding slides, and biometric registration form.
