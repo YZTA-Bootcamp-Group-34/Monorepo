@@ -23,11 +23,11 @@
   - [x] Chatbot sayfasındaki mesajlaşma ve butonların doğrudan backend `/api/chat` ile senkronize çalıştırılması.
   - [x] Sohbet tamamlanıp "Randevu Al" dendiğinde yeni bir hasta anamnez dosyasının veritabanına yazılması ve hekim paneline anında yansıması.
 
-### 🟡 FAZ 2: AI Semptom Ayrıştırma (NLP/LLM) Entegrasyonu
+### 🟢 FAZ 2: AI Semptom Ayrıştırma (NLP/LLM) Entegrasyonu (Tamamlandı)
 *Hedef: CarePulse asistanına girilen semptomların gerçek bir NLP/LLM motoruyla SOAP analizine dönüştürülmesi.*
-- [ ] FastAPI backend'e Google Gemini API entegrasyonu.
-- [ ] Doğal dilden semptom çekip SOAP raporu, ICD-10 kod eşleştirmesi ve öncelik (Acil, Rutin, Takip) çıkaran prompt mühendisliğinin yapılması.
-- [ ] Cosine Similarity algoritması ile hastanın geçmiş şikayetleri ile güncel semptomları arasında bağ kurup kritik anomalileri tespit eden "Tıbbi Hafıza" modülü.
+- [x] FastAPI backend'e Google Gemini API ve session tabanlı diyalog geçmişi entegrasyonu.
+- [x] Doğal dilden semptom ayrıştırıp yapılandırılmış JSON SOAP verileri (tetkikler, poliklinikler, olasılık oranları) çıkaran prompt mühendisliği yapıldı.
+- [x] Saf Python tabanlı **Cosine Similarity** (Kosinüs Benzerliği) algoritması ve tıbbi eşanlamlı genişletme motoru (`expand_medical_terms`) kodlandı; hastanın geçmiş tanısı ile güncel şikayetleri karşılaştırılarak kritik risk uyarıları hekim paneline entegre edildi.
 
 ### 🟡 FAZ 3: MHRS Randevu & Sevk Yönetim Akışı
 *Hedef: Hastaneler arası veya poliklinikler arası sevk ve randevu onay süreçlerinin uçtan uca simüle edilmesi.*
