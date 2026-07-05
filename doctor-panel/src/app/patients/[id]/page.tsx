@@ -11,7 +11,8 @@ import {
   Stethoscope, 
   Send, 
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle
 } from "lucide-react";
 import Image from "next/image";
 
@@ -55,6 +56,7 @@ interface PatientDetails {
   symptom_findings: SymptomFinding[];
   probabilities: Probability[];
   action: Action;
+  alerts?: string[];
 }
 
 export default function PatientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -223,6 +225,26 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
           <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-royal-blue border-2 border-white rounded-full"></span>
         </button>
       </header>
+
+      {/* Dynamic AI Warnings (Uzun Süreli Medikal Hafıza Alerts) */}
+      {patient.alerts && patient.alerts.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {patient.alerts.map((alert, idx) => (
+            <div 
+              key={idx} 
+              className="flex items-start gap-3 p-4 bg-red-50/80 border border-red-200 rounded-2xl text-xs text-urgency-red shadow-sm animate-pulse"
+            >
+              <div className="p-1 bg-urgency-red text-white rounded-lg mt-0.5">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div className="flex-1 leading-relaxed">
+                <strong className="font-bold">Bağlamsal Tıbbi Uyarı: </strong>
+                {alert}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Top row layout (Patient profile card + Medical History summary) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
