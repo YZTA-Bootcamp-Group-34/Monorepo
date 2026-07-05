@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Message {
   id: string;
@@ -45,7 +46,10 @@ export default function ChatbotScreen() {
   useEffect(() => {
     const checkReferrals = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/patients/1");
+        const token = await AsyncStorage.getItem("user_token") || "";
+        const res = await fetch("http://localhost:8000/api/patients/1", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
         if (res.ok) {
           const data = await res.json();
           if (data.referral_status === "CONFIRMED") {

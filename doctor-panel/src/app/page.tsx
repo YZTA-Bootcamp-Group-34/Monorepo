@@ -47,6 +47,7 @@ export default function Dashboard() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -116,7 +117,10 @@ export default function Dashboard() {
     // Attempt to fetch from our FastAPI backend
     const fetchData = async () => {
       try {
-        const patientsRes = await fetch("http://localhost:8000/api/patients");
+        const token = localStorage.getItem("token") || "";
+        const headers = { "Authorization": `Bearer ${token}` };
+
+        const patientsRes = await fetch("http://localhost:8000/api/patients", { headers });
         if (patientsRes.ok) {
           const patientsData = await patientsRes.json();
           // Sort Ulaş Can first to match Figma screenshot 7 list
@@ -130,7 +134,7 @@ export default function Dashboard() {
           setPatients(mockPatients);
         }
 
-        const apptsRes = await fetch("http://localhost:8000/api/appointments/history");
+        const apptsRes = await fetch("http://localhost:8000/api/appointments/history", { headers });
         if (apptsRes.ok) {
           const apptsData = await apptsRes.json();
           setAppointments(apptsData);
@@ -141,6 +145,8 @@ export default function Dashboard() {
         console.log("Backend offline, using high-fidelity mock data");
         setPatients(mockPatients);
         setAppointments(mockAppointments);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -349,61 +355,81 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="border-b border-[#E7EEFF]/50 hover:bg-[#F9F9FF]/30 transition group">
-                  <td className="p-4 pl-6">
-                    <Link href={`/patients/${patient.id}`} className="flex items-center gap-3 cursor-pointer">
-                      <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#E7EEFF]">
-                        <Image
-                          src={patient.name.includes("Esra") 
-                            ? "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"
-                            : patient.name.includes("Ulaş") 
-                            ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
-                            : "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"
-                          }
-                          alt={patient.name}
-                          fill
-                          className="object-cover"
-                        />
+              {loading ? (
+                [1, 2, 3].map((idx) => (
+                  <tr key={idx} className="border-b border-[#E7EEFF]/30 animate-pulse">
+                    <td className="p-4 pl-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-100" />
+                        <div className="flex flex-col gap-1.5">
+                          <div className="w-24 h-4 bg-slate-100 rounded-md" />
+                          <div className="w-16 h-3 bg-slate-100 rounded-md" />
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="font-semibold text-sm text-[#111C2C] group-hover:text-royal-blue transition">
-                          {patient.name}
-                        </span>
-                        {patient.followup_status && patient.followup_status.startsWith("ALARM") && (
-                          <span className="text-[9px] bg-red-100 text-urgency-red border border-red-200 font-bold px-1.5 py-0.5 rounded-md w-fit animate-pulse">
-                            🚨 {patient.followup_status}
+                    </td>
+                    <td className="p-4"><div className="w-16 h-4 bg-slate-100 rounded-md" /></td>
+                    <td className="p-4"><div className="w-24 h-4 bg-slate-100 rounded-md" /></td>
+                    <td className="p-4"><div className="w-16 h-5 bg-slate-100 rounded-full" /></td>
+                    <td className="p-4 pr-6"><div className="w-28 h-2 bg-slate-100 rounded-full" /></td>
+                  </tr>
+                ))
+              ) : (
+                filteredPatients.map((patient) => (
+                  <tr key={patient.id} className="border-b border-[#E7EEFF]/50 hover:bg-[#F9F9FF]/30 transition group">
+                    <td className="p-4 pl-6">
+                      <Link href={`/patients/${patient.id}`} className="flex items-center gap-3 cursor-pointer">
+                        <div className="relative w-10 h-10 rounded-full overflow-hidden border border-[#E7EEFF]">
+                          <Image
+                            src={patient.name.includes("Esra") 
+                              ? "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"
+                              : patient.name.includes("Ulaş") 
+                              ? "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+                              : "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"
+                            }
+                            alt={patient.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-semibold text-sm text-[#111C2C] group-hover:text-royal-blue transition">
+                            {patient.name}
                           </span>
-                        )}
-                        <span className="text-[11px] text-slate-dark">
-                          {patient.gender}, {patient.age} Yaş
+                          {patient.followup_status && patient.followup_status.startsWith("ALARM") && (
+                            <span className="text-[9px] bg-red-100 text-urgency-red border border-red-200 font-bold px-1.5 py-0.5 rounded-md w-fit animate-pulse">
+                              🚨 {patient.followup_status}
+                            </span>
+                          )}
+                          <span className="text-[11px] text-slate-dark">
+                            {patient.gender}, {patient.age} Yaş
+                          </span>
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="p-4 text-xs font-mono text-slate-dark">#PY-{patient.tc_no.substring(7)}</td>
+                    <td className="p-4 text-xs text-[#111C2C]">{patient.son_randevu}</td>
+                    <td className="p-4">
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${getStatusColor(patient.status)}`}>
+                        {patient.status}
+                      </span>
+                    </td>
+                    <td className="p-4 pr-6">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full ${getCriticalityBarColor(patient.status)}`}
+                            style={{ width: `${patient.criticality * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-semibold text-slate-dark w-6 text-right">
+                          {Math.round(patient.criticality * 100)}%
                         </span>
                       </div>
-                    </Link>
-                  </td>
-                  <td className="p-4 text-xs font-mono text-slate-dark">#PY-{patient.tc_no.substring(7)}</td>
-                  <td className="p-4 text-xs text-[#111C2C]">{patient.son_randevu}</td>
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide ${getStatusColor(patient.status)}`}>
-                      {patient.status}
-                    </span>
-                  </td>
-                  <td className="p-4 pr-6">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full ${getCriticalityBarColor(patient.status)}`}
-                          style={{ width: `${patient.criticality * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-[10px] font-semibold text-slate-dark w-6 text-right">
-                        {Math.round(patient.criticality * 100)}%
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredPatients.length === 0 && (
+                    </td>
+                  </tr>
+                ))
+              )}
+              {!loading && filteredPatients.length === 0 && (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-sm text-slate-dark">
                     Kayıtlı aktif hasta bulunamadı.

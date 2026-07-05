@@ -35,9 +35,9 @@
   - [x] Giriş Yap ve Kayıt Ol ekranlarının tasarımı ve api entegrasyonu.
   - [x] Figma tarzında 3 aşamalı onboarding tanıtım slaytı (CarePulse Asistanı, Kolay Sevk/Randevu, Taburcu Takip) ve profil kurulum formu (boy, kilo, yaş, kan grubu, kronik hastalıklar).
 
-### 🟡 FAZ 6: Production Cilalama & Uçtan Uca Koruma
+### 🟢 FAZ 6: Production Cilalama & Uçtan Uca Koruma (Tamamlandı)
 *Hedef: Tüm monoreponun prod-ready seviyeye çıkarılması, token güvenliği, arayüz iskelet yüklemeleri (skeleton), toast uyarıları ve veri doğrulama kontrollerinin yapılması.*
-- [ ] Next.js ve Expo üzerinde tüm isteklerin authorization header (Bearer JWT) ile gönderilmesinin zorunlu kılınması.
-- [ ] Mobil uygulamada ve web panelinde veri çekme anlarında boş ekran yerine iskelet (skeleton) yükleme durumları.
-- [ ] Başarı/hata durumlarında kullanıcıya premium toast mesajlarının gösterilmesi (sonner / react-hot-toast).
-- [ ] SQLite seed scriptinin (`seed.py`) yeni auth yapılarıyla uyumlu olarak çalışacak şekilde güncellenmesi.
+- [x] Next.js ve Expo üzerinde tüm isteklerin authorization header (Bearer JWT) ile gönderilmesinin zorunlu kılınması.
+- [x] Mobil uygulamada ve web panelinde veri çekme anlarında boş ekran yerine iskelet (skeleton) yükleme durumları.
+- [x] Başarı/hata durumlarında kullanıcıya premium toast mesajlarının gösterilmesi (sonner / react-hot-toast).
+- [x] SQLite seed scriptinin (`seed.py`) yeni auth yapılarıyla uyumlu olarak çalışacak şekilde güncellenmesi.

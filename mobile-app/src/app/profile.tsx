@@ -33,9 +33,13 @@ export default function ProfileScreen() {
     setSubmitting(true);
     try {
       const parsedFever = parseFloat(fever) || 36.5;
+      const token = await AsyncStorage.getItem("user_token") || "";
       const res = await fetch("http://localhost:8000/api/patients/1/followup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           pain_level: painLevel,
           fever: parsedFever,

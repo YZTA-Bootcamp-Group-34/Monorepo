@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { 
   Bell, 
   ArrowLeft, 
@@ -71,17 +72,19 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
   const handleConfirmAction = async () => {
     setSubmitting(true);
     try {
+      const token = localStorage.getItem("token") || "";
       const res = await fetch(`http://localhost:8000/api/patients/${patientId}/action`, {
         method: "PUT",
+        headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
-        alert("Randevu ve Sevk İşlemi Başarıyla Onaylandı!");
+        toast.success("Randevu ve Sevk İşlemi Başarıyla Onaylandı!");
         router.push("/");
       } else {
-        alert("Bir hata oluştu.");
+        toast.error("Bir hata oluştu.");
       }
     } catch (err) {
-      alert("Randevu ve Sevk İşlemi Onaylandı! (Simüle)");
+      toast.success("Randevu ve Sevk İşlemi Onaylandı! (Simüle)");
       router.push("/");
     } finally {
       setSubmitting(false);
@@ -184,7 +187,10 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
 
     const fetchPatientDetails = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/patients/${patientId}`);
+        const token = localStorage.getItem("token") || "";
+        const res = await fetch(`http://localhost:8000/api/patients/${patientId}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
         if (res.ok) {
           const data = await res.json();
           setPatient(data);

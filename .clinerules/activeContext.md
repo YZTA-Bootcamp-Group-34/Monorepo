@@ -1,21 +1,22 @@
-# Active Context: PreClinic Phase 5 Setup
+# Active Context: PreClinic Project Completed
 
 ## Current Focus
-We are starting **FAZ 5: Kimlik Doğrulama (Auth) & Onboarding Süreçleri**.
-The objective is to implement a robust, production-ready JWT authentication system on the FastAPI backend, and design visual register, login, and onboarding wizard flows for both Next.js doctor-panel and Expo mobile patient app.
+All roadmap phases (**FAZ 1 - FAZ 6**) have been successfully completed, integrated, and verified!
+The PreClinic system now represents a fully secure, stateful, end-to-end connected health monorepo:
+1. Patient app (Expo) -> uses JWT authorization to retrieve data, registers patients, guides through onboarding slides, updates biometric information, consults Gemini AI, books appointments, and submits follow-up surveys.
+2. Backend (FastAPI) -> runs SQLite operations with secure password hashing and JWT token verification dependencies.
+3. Doctor panel (Next.js) -> features secure login/register, onboarding credentials, dashboard list with loading skeletons, toast notifications, and action confirmations.
 
-## Recent Decisions
-- **Unified Auth Backend:** We will introduce a `User` table to SQLite, representing both patients and doctors with a `role` field ("doctor" or "patient").
-- **Tokens:** Authentication will utilize JWT bearer tokens stored securely (in local storage / Expo secure store).
-- **Onboarding:**
-  - Next.js onboarding allows doctors to set their medical diploma, clinic branch, and description.
-  - Expo onboarding introduces welcome slides and prompts patients for biometric details (blood type, weight, height, age) and chronic conditions, storing them in the `patients` table.
+## Recent Changes
+- Completed **FAZ 5 (Kimlik Doğrulama & Onboarding Süreçleri)**.
+- Completed **FAZ 6 (Production Cilalama & Uçtan Uca Koruma)**.
+- Secured patient details, action confirmations, followup reports, and appointment bookings with backend JWT authorization verification.
+- Added animated skeleton loader tables to the Next.js doctor dashboard.
+- Integrated `react-hot-toast` to next.js layouts for premium toast messages.
 
-## Immediate Tasks
-1. Build backend authentication:
-   - Install cryptography packages (`pyjwt`, `passlib` with `bcrypt`).
-   - Define `User` and `DoctorProfile` models in `backend/models.py`.
-   - Update `seed.py` to create default doctor and patient users with hashed passwords.
-   - Implement `/api/auth/register`, `/api/auth/login`, and `/api/auth/me` endpoints in `backend/main.py`.
-2. Connect doctor web panel with JWT auth screens (`/login`, `/register`, `/onboarding`).
-3. Connect Expo mobile client with auth screens, onboarding slides, and biometric registration form.
+## Verification
+- Clean compilation checked and succeeded:
+  - Next.js: `npm run build` completes with zero errors.
+  - React Native (Expo): `npx tsc --noEmit` checks out successfully with zero type errors.
+  - Python: `py_compile` checks completed successfully.
+  - Database: Rebuilt and seeded successfully.

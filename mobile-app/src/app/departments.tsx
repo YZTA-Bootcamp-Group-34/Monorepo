@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Department {
   id: number;
@@ -64,9 +65,13 @@ export default function DepartmentsScreen() {
         dateString = timeStr;
       }
 
+      const token = await AsyncStorage.getItem("user_token") || "";
       const res = await fetch("http://localhost:8000/api/appointments/history", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           date_str: dateString,
           title: `${deptName} Randevusu`,

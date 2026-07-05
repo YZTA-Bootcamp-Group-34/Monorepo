@@ -5,6 +5,7 @@ import bcrypt
 from datetime import datetime, timedelta
 from typing import List, Optional
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -49,6 +50,19 @@ app.add_middleware(
 # --- JWT Configs & Helpers ---
 JWT_SECRET = "preclinic_super_secret_key_12345"
 JWT_ALGORITHM = "HS256"
+
+security = HTTPBearer()
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş token.")
+    user_id = payload.get("user_id")
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Kullanıcı bulunamadı.")
+    return user
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -349,7 +363,7 @@ class ChatResponse(BaseModel):
 # --- Endpoints ---
 
 @app.get("/api/patients", response_model=List[PatientListSchema])
-def get_patients(db: Session = Depends(get_db)):
+def get_patients(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return db.query(Patient).all()
 
 import math
@@ -396,7 +410,7 @@ def expand_medical_terms(text: str) -> str:
     return expanded
 
 @app.get("/api/patients/{patient_id}", response_model=PatientDetailSchema)
-def get_patient_detail(patient_id: int, db: Session = Depends(get_db)):
+def get_patient_detail(patient_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -443,18 +457,18 @@ class AppointmentHistoryCreateSchema(BaseModel):
     status: str
 
 @app.get("/api/appointments/history", response_model=List[AppointmentHistorySchema])
-def get_appointment_history(db: Session = Depends(get_db)):
+def get_appointment_history(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return db.query(AppointmentHistory).all()
 
 @app.post("/api/appointments/history", response_model=AppointmentHistorySchema)
-def create_appointment_history(item: AppointmentHistoryCreateSchema, db: Session = Depends(get_db)):
+def create_appointment_history(appt: AppointmentHistoryCreateSchema, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_item = AppointmentHistory(
-        date_str=item.date_str,
-        title=item.title,
-        detail=item.detail,
-        rec_code=item.rec_code,
-        doctor_name=item.doctor_name,
-        status=item.status
+        date_str=appt.date_str,
+        title=appt.title,
+        detail=appt.detail,
+        rec_code=appt.rec_code,
+        doctor_name=appt.doctor_name,
+        status=appt.status
     )
     db.add(db_item)
     db.commit()
@@ -466,7 +480,7 @@ class ActionResponse(BaseModel):
     message: str
 
 @app.put("/api/patients/{patient_id}/action", response_model=ActionResponse)
-def handle_patient_action(patient_id: int, db: Session = Depends(get_db)):
+def handle_patient_action(patient_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -504,7 +518,7 @@ class FollowUpSubmitSchema(BaseModel):
     notes: str
 
 @app.post("/api/patients/{patient_id}/followup")
-def submit_patient_followup(patient_id: int, data: FollowUpSubmitSchema, db: Session = Depends(get_db)):
+def submit_patient_followup(patient_id: int, data: FollowUpSubmitSchema, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
