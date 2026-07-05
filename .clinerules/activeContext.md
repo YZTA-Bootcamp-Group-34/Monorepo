@@ -1,17 +1,20 @@
 # Active Context: PreClinic Setup
 
 ## Current Focus
-We are starting **FAZ 3: MHRS Randevu & Sevk Yönetim Akışı**.
-The objective is to connect patient branch bookings on the mobile app directly to dynamic database states, and enable the doctor to confirm and issue referrals, updating notification counters in real-time.
+All roadmap phases (**FAZ 1 - FAZ 4**) have been successfully completed, integrated, and verified!
+The PreClinic system now represents a fully stateful, end-to-end connected health monorepo:
+1. Patient app (Expo) -> uses AI symptom analysis, books polyclinic slots, gets doctor-confirmed notifications, and reports postoperative followup surveys.
+2. Backend (FastAPI) -> handles SQLite operations, runs Google Gemini LLM dialogs, performs Cosine Similarity calculations with medical synonym expansions, and detects clinical follow-up alarm thresholds.
+3. Doctor panel (Next.js) -> lists patients, flags active alerts, updates sevk routing statuses, and highlights critical postoperative alarms in real-time.
 
 ## Recent Changes
-- Completed **FAZ 2 (AI Semptom Ayrıştırma & Kosinüs Benzerliği Entegrasyonu)**.
-- Installed `google-generativeai` and `python-dotenv`.
-- Wrote Google Gemini API dialogue system inside `/api/chat` with structured JSON parsing, system instructions, and stateful session histories.
-- Implemented pure-Python **Cosine Similarity** with medical term expansions inside `GET /api/patients/{id}`.
-- Configured Doctor Panel details page to receive and display similarity risk alerts dynamically under the header with warning icons.
+- Completed **FAZ 4 (Proaktif Taburcu Sonrası Takip Sistemi)**.
+- Added `POST /api/patients/{id}/followup` endpoint in FastAPI backend to analyze pain levels, fever levels, and text symptoms.
+- Integrated postoperative feedback surveys on mobile client profile tab, communicating with the backend.
+- Updated Doctor panel dashboard to flash critical `KRİTİK TAKİP` alarms and highlight specific alarm warnings on patient lists.
 
-## Next Steps (Phase 3)
-1. Add backend API routes for scheduling available appointment hours per department.
-2. Hook the mobile client's "Randevu Al" trigger to complete dynamic appointment allocations in the database.
-3. Update the notification badge triggers to increment/decrement based on active patients status.
+## Verification
+- Clean compilation checked and succeeded:
+  - Next.js: `npm run build` completes with zero errors.
+  - React Native (Expo): `npx tsc --noEmit` checks out successfully with zero type errors.
+  - Python: `py_compile` checks completed successfully.

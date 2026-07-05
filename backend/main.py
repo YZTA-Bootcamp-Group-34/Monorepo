@@ -94,6 +94,10 @@ class PatientDetailSchema(BaseModel):
     probabilities: List[AIProbabilitySchema] = []
     action: Optional[AIActionSchema] = None
     alerts: List[str] = []
+    referral_status: str
+    referral_date: Optional[str] = None
+    referral_doctor: Optional[str] = None
+    followup_status: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -107,6 +111,7 @@ class PatientListSchema(BaseModel):
     status: str
     criticality: float
     son_randevu: str
+    followup_status: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -232,9 +237,32 @@ def get_patient_detail(patient_id: int, db: Session = Depends(get_db)):
 def get_departments(db: Session = Depends(get_db)):
     return db.query(Department).all()
 
+class AppointmentHistoryCreateSchema(BaseModel):
+    date_str: str
+    title: str
+    detail: str
+    rec_code: str
+    doctor_name: str
+    status: str
+
 @app.get("/api/appointments/history", response_model=List[AppointmentHistorySchema])
 def get_appointment_history(db: Session = Depends(get_db)):
     return db.query(AppointmentHistory).all()
+
+@app.post("/api/appointments/history", response_model=AppointmentHistorySchema)
+def create_appointment_history(item: AppointmentHistoryCreateSchema, db: Session = Depends(get_db)):
+    db_item = AppointmentHistory(
+        date_str=item.date_str,
+        title=item.title,
+        detail=item.detail,
+        rec_code=item.rec_code,
+        doctor_name=item.doctor_name,
+        status=item.status
+    )
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item
 
 class ActionResponse(BaseModel):
     success: bool
@@ -249,11 +277,63 @@ def handle_patient_action(patient_id: int, db: Session = Depends(get_db)):
     # Mark status as referred, reduce urgency metrics to 0
     patient.status = "SEVK EDİLDİ"
     patient.criticality = 0.0
+    
+    # Confirm referral and assign doctor/date based on recommended department
+    patient.referral_status = "CONFIRMED"
+    
+    recommended_dept = ""
+    if patient.action:
+        recommended_dept = patient.action.recommended_dept
+        
+    if "Nöroloji" in recommended_dept:
+        patient.referral_doctor = "Dr. Alper Duman"
+        patient.referral_date = "Yarın Saat 09:00"
+    elif "Kardiyoloji" in recommended_dept:
+        patient.referral_doctor = "Dr. Hasan Şahin"
+        patient.referral_date = "Bugün (Acil Sevk)"
+    else:
+        patient.referral_doctor = "Dr. Yusuf Kurt"
+        patient.referral_date = "15 Ekim 2026, 10:30"
+        
     db.commit()
     return ActionResponse(
         success=True, 
-        message=f"Hasta {patient.name} için randevu/sevk işlemi başarıyla onaylandı ve sistem durum kaydı güncellendi."
+        message=f"Hasta {patient.name} için {recommended_dept or 'Poliklinik'} randevu/sevk işlemi başarıyla onaylandı. Atanan Hekim: {patient.referral_doctor}, Tarih: {patient.referral_date}."
     )
+
+class FollowUpSubmitSchema(BaseModel):
+    pain_level: int
+    fever: float
+    notes: str
+
+@app.post("/api/patients/{patient_id}/followup")
+def submit_patient_followup(patient_id: int, data: FollowUpSubmitSchema, db: Session = Depends(get_db)):
+    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+        
+    # Check if symptoms suggest worsening
+    is_worse = (data.pain_level >= 7 or 
+                data.fever >= 38.5 or 
+                "kötü" in data.notes.lower() or 
+                "ağrı" in data.notes.lower() or 
+                "sancı" in data.notes.lower())
+                
+    if is_worse:
+        patient.status = "KRİTİK TAKİP"
+        patient.criticality = 0.95
+        patient.followup_status = f"ALARM: Şiddetli Ağrı/Ateş ({data.pain_level}/10, {data.fever}°C)"
+    else:
+        patient.status = "STABİL"
+        patient.criticality = 0.15
+        patient.followup_status = "NORMAL"
+        
+    db.commit()
+    return {
+        "success": True,
+        "status": patient.status,
+        "followup_status": patient.followup_status
+    }
 
 @app.post("/api/chat", response_model=ChatResponse)
 def chat_with_bot(chat: ChatMessage, db: Session = Depends(get_db)):

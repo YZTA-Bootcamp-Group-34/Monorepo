@@ -29,12 +29,13 @@
 - [x] Doğal dilden semptom ayrıştırıp yapılandırılmış JSON SOAP verileri (tetkikler, poliklinikler, olasılık oranları) çıkaran prompt mühendisliği yapıldı.
 - [x] Saf Python tabanlı **Cosine Similarity** (Kosinüs Benzerliği) algoritması ve tıbbi eşanlamlı genişletme motoru (`expand_medical_terms`) kodlandı; hastanın geçmiş tanısı ile güncel şikayetleri karşılaştırılarak kritik risk uyarıları hekim paneline entegre edildi.
 
-### 🟡 FAZ 3: MHRS Randevu & Sevk Yönetim Akışı
+### 🟢 FAZ 3: MHRS Randevu & Sevk Yönetim Akışı (Tamamlandı)
 *Hedef: Hastaneler arası veya poliklinikler arası sevk ve randevu onay süreçlerinin uçtan uca simüle edilmesi.*
-- [ ] Mobil uygulamada poliklinik bazlı doktor seçimi ve randevu saatlerinin listelenmesi.
-- [ ] Hekim paneli onayından sonra hastaya mobil bildirim ile sevk edilen bölüm randevusunun ulaştırılması.
+- [x] Mobil uygulamada poliklinik kartları genişletilebilir yapıldı; müsait hekimler ve randevu saatleri listelendi. Tıklanan saat diliminin SQLite veritabanına (`POST /api/appointments/history`) yazılması sağlandı.
+- [x] Hekim paneli sevk onayından sonra mobil uygulamaya 6 saniyede bir tetiklenen polling ile durum güncellenmesi çekildi ve hastaya kırmızı renkli detaylı sevk randevusu bilgilendirme kartı ulaştırıldı.
 
-### 🟡 FAZ 4: Proaktif Taburcu Sonrası Takip Sistemi
+### 🟢 FAZ 4: Proaktif Taburcu Sonrası Takip Sistemi (Tamamlandı)
 *Hedef: Muayene sonrası hastayı otonom takibe alan periyodik semptom sorgulama modülü.*
-- [ ] Backend tarafında zamanlanmış görev yönetimi (Scheduler) ile hastaya periyodik kontrol soruları tetikleme.
-- [ ] Mobil uygulamada taburcu sonrası takip anketi ve anomali tespiti durumunda hekim paneline acil alarm düşürme akışı.
+- [x] Backend tarafında postoperative takip API'si (`POST /api/patients/{id}/followup`) yazıldı, gelen verilerde anomali kontrolü yapıldı (Ateş >= 38.5, Ağrı >= 7 veya negatif durum notları).
+- [x] Mobil uygulamada (Profil ekranında) hekimle durum paylaşımı yapacak "Taburcu Sonrası Takip Anketi" (Ağrı Kaydırıcı Butonu, Ateş Alanı ve Not Girişi) geliştirildi, alarm durumunda hekime anlık SQLite alarm kaydı gönderildi.
+- [x] Hekim panelinde (Dashboard) alarm durumu algılanan hastalar için kırmızı renkli yanıp sönen `KRİTİK TAKİP` alarm rozeti ve uyarı durum etiketleri entegre edildi.

@@ -34,6 +34,39 @@ export default function ChatbotScreen() {
   const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
+  interface ReferralNotification {
+    doctor: string;
+    date: string;
+    department: string;
+  }
+  
+  const [notification, setNotification] = useState<ReferralNotification | null>(null);
+
+  useEffect(() => {
+    const checkReferrals = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/api/patients/1");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.referral_status === "CONFIRMED") {
+            setNotification({
+              doctor: data.referral_doctor || "Poliklinik Hekimi",
+              date: data.referral_date || "Müsaitlik doğrultusunda",
+              department: data.action?.recommended_dept || "Sevk Edilen Poliklinik"
+            });
+          } else {
+            setNotification(null);
+          }
+        }
+      } catch (err) {
+        // Silent error
+      }
+    };
+    checkReferrals();
+    const interval = setInterval(checkReferrals, 6000);
+    return () => clearInterval(interval);
+  }, []);
+
   const backendUrl = "http://localhost:8000/api/chat";
 
   const handleSendMessage = async (textToSend: string) => {
@@ -137,6 +170,27 @@ export default function ChatbotScreen() {
           />
         </TouchableOpacity>
       </View>
+
+      {/* Dynamic Referral Notification Banner */}
+      {notification && (
+        <View style={styles.notificationBanner}>
+          <View style={styles.notificationHeader}>
+            <Ionicons name="notifications" size={18} color="#BA1A1A" />
+            <Text style={styles.notificationTitle}>Sevk Randevunuz Onaylandı!</Text>
+          </View>
+          <Text style={styles.notificationText}>
+            <Text style={{ fontWeight: "bold" }}>Bölüm: </Text>{notification.department}{"\n"}
+            <Text style={{ fontWeight: "bold" }}>Hekim: </Text>{notification.doctor}{"\n"}
+            <Text style={{ fontWeight: "bold" }}>Tarih/Saat: </Text>{notification.date}
+          </Text>
+          <TouchableOpacity 
+            style={styles.notificationCloseButton}
+            onPress={() => setNotification(null)}
+          >
+            <Text style={styles.notificationCloseText}>Kapat</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
@@ -469,5 +523,50 @@ const styles = StyleSheet.create({
     backgroundColor: "#003C90",
     justifyContent: "center",
     alignItems: "center",
+  },
+  notificationBanner: {
+    backgroundColor: "#FEEBEB",
+    borderWidth: 1,
+    borderColor: "#FAD2D2",
+    borderRadius: 16,
+    padding: 14,
+    marginHorizontal: 16,
+    marginTop: 12,
+    shadowColor: "#BA1A1A",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  notificationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 6,
+  },
+  notificationTitle: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#BA1A1A",
+  },
+  notificationText: {
+    fontSize: 11,
+    color: "#434653",
+    lineHeight: 16,
+  },
+  notificationCloseButton: {
+    marginTop: 8,
+    alignSelf: "flex-end",
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#FAD2D2",
+    borderRadius: 8,
+  },
+  notificationCloseText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#BA1A1A",
   },
 });

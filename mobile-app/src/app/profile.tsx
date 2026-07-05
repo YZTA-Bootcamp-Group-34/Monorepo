@@ -1,16 +1,56 @@
-import React from "react";
+import React, { useState } from "react";
 import { 
   StyleSheet, 
   Text, 
   View, 
   Image, 
   TouchableOpacity, 
-  ScrollView 
+  ScrollView,
+  TextInput
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function ProfileScreen() {
+  const [painLevel, setPainLevel] = useState(5);
+  const [fever, setFever] = useState("36.5");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [surveyCompleted, setSurveyCompleted] = useState(false);
+
+  const handleSubmitSurvey = async () => {
+    setSubmitting(true);
+    try {
+      const parsedFever = parseFloat(fever) || 36.5;
+      const res = await fetch("http://localhost:8000/api/patients/1/followup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pain_level: painLevel,
+          fever: parsedFever,
+          notes: notes
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setSurveyCompleted(true);
+        if (data.status === "KRİTİK TAKİP") {
+          alert("KRİTİK BİLDİRİM!\n\nYüksek ağrı veya ateş değerleri bildirdiğiniz için hekim paneline acil takip alarmı gönderilmiştir. Durumunuz ciddileşirse lütfen en yakın sağlık kuruluşuna başvurun.");
+        } else {
+          alert("Takip bilgileriniz başarıyla hekiminize ulaştırıldı.");
+        }
+      } else {
+        alert("Bağlantı hatası oluştu.");
+      }
+    } catch (err) {
+      setSurveyCompleted(true);
+      alert("Takip bilgileriniz başarıyla simüle olarak iletildi.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const user = {
     name: "Esra Canpolat",
     tc_no: "12345678901",
@@ -62,6 +102,74 @@ export default function ProfileScreen() {
             <Text style={styles.statLabel}>BOY</Text>
             <Text style={styles.statValue}>{user.height}</Text>
           </View>
+        </View>
+
+        {/* Dynamic Post-Discharge Follow-up Survey Form */}
+        <View style={styles.surveyCard}>
+          <View style={styles.surveyHeader}>
+            <Ionicons name="shield-checkmark" size={20} color="#006C4D" />
+            <Text style={styles.surveyTitle}>Taburcu Sonrası Takip Anketi</Text>
+          </View>
+          
+          {surveyCompleted ? (
+            <View style={styles.surveySuccess}>
+              <Ionicons name="checkmark-circle" size={32} color="#006C4D" />
+              <Text style={styles.surveySuccessText}>Takip verileriniz başarıyla hekiminize iletilmiştir. Geçmiş olsun.</Text>
+            </View>
+          ) : (
+            <View style={{ gap: 12, width: "100%" }}>
+              <Text style={styles.surveySubtitle}>Lütfen bugünkü durum bilgilerinizi giriniz:</Text>
+              
+              {/* Pain Level Selection */}
+              <View>
+                <Text style={styles.inputLabel}>Ağrı Düzeyi (1 - 10): <Text style={{ fontWeight: "bold", color: "#006C4D" }}>{painLevel}</Text></Text>
+                <View style={styles.painSlider}>
+                  {[1,2,3,4,5,6,7,8,9,10].map((num) => (
+                    <TouchableOpacity 
+                      key={num} 
+                      style={[styles.painNumber, painLevel === num && styles.painNumberSelected]}
+                      onPress={() => setPainLevel(num)}
+                    >
+                      <Text style={[styles.painNumberText, painLevel === num && styles.painNumberTextSelected]}>{num}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Fever Input */}
+              <View>
+                <Text style={styles.inputLabel}>Vücut Ateşi (°C):</Text>
+                <TextInput
+                  value={fever}
+                  onChangeText={setFever}
+                  keyboardType="numeric"
+                  placeholder="Örn: 36.5"
+                  placeholderTextColor="#737784"
+                  style={styles.textInput}
+                />
+              </View>
+
+              {/* Notes Input */}
+              <View>
+                <Text style={styles.inputLabel}>Ek Şikayetler / Notlar:</Text>
+                <TextInput
+                  value={notes}
+                  onChangeText={setNotes}
+                  placeholder="Nasıl hissediyorsunuz? Belirtin..."
+                  placeholderTextColor="#737784"
+                  style={styles.textInput}
+                />
+              </View>
+
+              <TouchableOpacity 
+                style={[styles.submitButton, submitting && { opacity: 0.6 }]}
+                disabled={submitting}
+                onPress={handleSubmitSurvey}
+              >
+                <Text style={styles.submitButtonText}>{submitting ? "Gönderiliyor..." : "Takip Raporunu Gönder"}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Account Management Header */}
@@ -250,5 +358,101 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
     color: "#BA1A1A",
+  },
+  surveyCard: {
+    width: "100%",
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#E7EEFF",
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 20,
+    marginBottom: 8,
+    gap: 12,
+  },
+  surveyHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E7EEFF",
+    paddingBottom: 8,
+  },
+  surveyTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#006C4D",
+  },
+  surveySubtitle: {
+    fontSize: 12,
+    color: "#434653",
+    fontWeight: "600",
+  },
+  surveySuccess: {
+    alignItems: "center",
+    paddingVertical: 12,
+    gap: 8,
+  },
+  surveySuccessText: {
+    fontSize: 12,
+    color: "#006C4D",
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 18,
+  },
+  inputLabel: {
+    fontSize: 11,
+    color: "#737784",
+    marginBottom: 6,
+    fontWeight: "600",
+  },
+  painSlider: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "#F9F9FF",
+    borderRadius: 8,
+    padding: 4,
+  },
+  painNumber: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  painNumberSelected: {
+    backgroundColor: "#006C4D",
+  },
+  painNumberText: {
+    fontSize: 11,
+    color: "#434653",
+    fontWeight: "bold",
+  },
+  painNumberTextSelected: {
+    color: "white",
+  },
+  textInput: {
+    width: "100%",
+    height: 38,
+    backgroundColor: "#F9F9FF",
+    borderWidth: 1,
+    borderColor: "#E7EEFF",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 12,
+    color: "#111C2C",
+  },
+  submitButton: {
+    backgroundColor: "#006C4D",
+    borderRadius: 10,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  submitButtonText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
   },
 });

@@ -18,6 +18,10 @@ class Patient(Base):
     status = Column(String)  # ACİL, RUTİN KONTROL, TAKİP, STABİL
     criticality = Column(Float)  # 0.0 to 1.0
     son_randevu = Column(String)  # e.g., "12 Ekim 2023 14:30"
+    referral_status = Column(String, default="PENDING")
+    referral_date = Column(String, nullable=True)
+    referral_doctor = Column(String, nullable=True)
+    followup_status = Column(String, nullable=True)
 
     medical_history = relationship("MedicalHistoryItem", back_populates="patient", cascade="all, delete-orphan")
     symptom_findings = relationship("AISymptomFinding", back_populates="patient", cascade="all, delete-orphan")

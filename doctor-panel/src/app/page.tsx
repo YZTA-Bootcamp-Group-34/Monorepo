@@ -27,6 +27,7 @@ interface Patient {
   status: string;
   criticality: number;
   son_randevu: string;
+  followup_status?: string;
 }
 
 interface Appointment {
@@ -139,6 +140,8 @@ export default function Dashboard() {
     switch (status.toUpperCase()) {
       case "ACİL":
         return "bg-red-50 text-urgency-red border border-red-200";
+      case "KRİTİK TAKİP":
+        return "bg-red-600 text-white font-bold animate-pulse border border-red-700";
       case "RUTİN KONTROL":
         return "bg-emerald-50 text-emerald border border-emerald-100";
       case "TAKİP":
@@ -151,6 +154,7 @@ export default function Dashboard() {
   const getCriticalityBarColor = (status: string) => {
     switch (status.toUpperCase()) {
       case "ACİL":
+      case "KRİTİK TAKİP":
         return "bg-urgency-red";
       case "RUTİN KONTROL":
         return "bg-emerald";
@@ -339,10 +343,15 @@ export default function Dashboard() {
                           className="object-cover"
                         />
                       </div>
-                      <div className="flex flex-col">
+                      <div className="flex flex-col gap-0.5">
                         <span className="font-semibold text-sm text-[#111C2C] group-hover:text-royal-blue transition">
                           {patient.name}
                         </span>
+                        {patient.followup_status && patient.followup_status.startsWith("ALARM") && (
+                          <span className="text-[9px] bg-red-100 text-urgency-red border border-red-200 font-bold px-1.5 py-0.5 rounded-md w-fit animate-pulse">
+                            🚨 {patient.followup_status}
+                          </span>
+                        )}
                         <span className="text-[11px] text-slate-dark">
                           {patient.gender}, {patient.age} Yaş
                         </span>
