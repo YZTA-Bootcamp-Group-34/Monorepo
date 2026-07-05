@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { 
   Bell, 
   ArrowLeft, 
@@ -59,9 +60,31 @@ interface PatientDetails {
 export default function PatientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const patientId = resolvedParams.id;
+  const router = useRouter();
 
   const [patient, setPatient] = useState<PatientDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleConfirmAction = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`http://localhost:8000/api/patients/${patientId}/action`, {
+        method: "PUT",
+      });
+      if (res.ok) {
+        alert("Randevu ve Sevk İşlemi Başarıyla Onaylandı!");
+        router.push("/");
+      } else {
+        alert("Bir hata oluştu.");
+      }
+    } catch (err) {
+      alert("Randevu ve Sevk İşlemi Onaylandı! (Simüle)");
+      router.push("/");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Fallback mock details for both patients
   const mockEsra: PatientDetails = {
@@ -403,9 +426,13 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
 
-          <button className="w-full bg-[#003C90] text-white py-3.5 rounded-xl text-xs font-bold shadow-sm hover:bg-opacity-95 active:scale-[0.99] flex items-center justify-center gap-2 transition mt-6">
+          <button 
+            onClick={handleConfirmAction}
+            disabled={submitting}
+            className="w-full bg-[#003C90] text-white py-3.5 rounded-xl text-xs font-bold shadow-sm hover:bg-opacity-95 active:scale-[0.99] flex items-center justify-center gap-2 transition mt-6 disabled:opacity-50"
+          >
             <Send className="w-4 h-4" />
-            <span>Randevuyu Onayla ve Sevk Et</span>
+            <span>{submitting ? "Onaylanıyor..." : "Randevuyu Onayla ve Sevk Et"}</span>
           </button>
         </div>
       </div>

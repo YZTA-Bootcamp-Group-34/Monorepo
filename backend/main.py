@@ -143,6 +143,25 @@ def get_departments(db: Session = Depends(get_db)):
 def get_appointment_history(db: Session = Depends(get_db)):
     return db.query(AppointmentHistory).all()
 
+class ActionResponse(BaseModel):
+    success: bool
+    message: str
+
+@app.put("/api/patients/{patient_id}/action", response_model=ActionResponse)
+def handle_patient_action(patient_id: int, db: Session = Depends(get_db)):
+    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    
+    # Mark status as referred, reduce urgency metrics to 0
+    patient.status = "SEVK EDİLDİ"
+    patient.criticality = 0.0
+    db.commit()
+    return ActionResponse(
+        success=True, 
+        message=f"Hasta {patient.name} için randevu/sevk işlemi başarıyla onaylandı ve sistem durum kaydı güncellendi."
+    )
+
 @app.post("/api/chat", response_model=ChatResponse)
 def chat_with_bot(chat: ChatMessage, db: Session = Depends(get_db)):
     text = chat.message.strip().lower()
@@ -167,7 +186,6 @@ def chat_with_bot(chat: ChatMessage, db: Session = Depends(get_db)):
             options=["Şiddetli Baş Ağrısı", "Hafif, geçici", "Geri Dön"]
         )
     elif "şiddetli baş" in text:
-        # Suggesting Neurology
         return ChatResponse(
             sender="bot",
             text="Şikayetleriniz şiddetli baş ağrısı ve halsizliği işaret ediyor. Sizi öncelikli olarak Nöroloji departmanına yönlendirmemi ister misiniz?",
@@ -197,9 +215,118 @@ def chat_with_bot(chat: ChatMessage, db: Session = Depends(get_db)):
             text="Nöroloji polikliniği için en yakın müsaitlik Yarın saat 09:00'dadır. Randevu oluşturulsun mu?",
             options=["Onayla", "Geri Dön"]
         )
+    elif "onayla" in text or "nöroloji randevusu al" in text:
+        # Dynamic patient creation: Sanal Asistan (Nöroloji)
+        exists = db.query(Patient).filter(Patient.name == "Sanal Asistan (Nöroloji)").first()
+        if not exists:
+            new_patient = Patient(
+                name="Sanal Asistan (Nöroloji)",
+                tc_no="12345678999",
+                age=34,
+                gender="Erkek",
+                blood_type="A Rh(+)",
+                weight=72.0,
+                height=178.0,
+                chronic_conditions="Astım",
+                status="RUTİN KONTROL",
+                criticality=0.35,
+                son_randevu="Yarın 09:00",
+                avatar_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+            )
+            db.add(new_patient)
+            db.commit()
+            
+            # History
+            m1 = MedicalHistoryItem(
+                patient_id=new_patient.id,
+                category="Klinik Tanı",
+                title="Zonklayıcı Baş Ağrısı",
+                details="Aralıklı migren atağı şüphesiyle takip ediliyor.",
+                color_tag="blue"
+            )
+            db.add(m1)
+
+            # Symptoms
+            f1 = AISymptomFinding(patient_id=new_patient.id, finding="Şiddetli Baş Ağrısı", checked=True)
+            f2 = AISymptomFinding(patient_id=new_patient.id, finding="Halsizlik", checked=True)
+            db.add_all([f1, f2])
+
+            # Probabilities
+            pr1 = AIProbability(patient_id=new_patient.id, condition="Migren Atak", probability=78)
+            db.add(pr1)
+
+            # Action
+            act = AIAction(
+                patient_id=new_patient.id,
+                recommended_dept="Nöroloji Polikliniği",
+                required_tests="Kranial MR, Hemogram"
+            )
+            db.add(act)
+            db.commit()
+
+        return ChatResponse(
+            sender="bot",
+            text="Nöroloji polikliniği için randevu kaydınız ve AI semptom analiz raporunuz oluşturuldu! Hekim ön bilgilendirme paneline başarıyla gönderildi.",
+            options=["Ana Menü"]
+        )
+    elif "randevuyu onayla" in text or "kardiyoloji randevusu al" in text:
+        # Dynamic patient creation: Sanal Asistan (Kardiyoloji)
+        exists = db.query(Patient).filter(Patient.name == "Sanal Asistan (Kardiyoloji)").first()
+        if not exists:
+            new_patient = Patient(
+                name="Sanal Asistan (Kardiyoloji)",
+                tc_no="12345678998",
+                age=58,
+                gender="Erkek",
+                blood_type="0 Rh(+)",
+                weight=85.0,
+                height=173.0,
+                chronic_conditions="Tip 2 Diyabet",
+                status="ACİL",
+                criticality=0.9,
+                son_randevu="Bugün (Acil Sevk)",
+                avatar_url="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"
+            )
+            db.add(new_patient)
+            db.commit()
+            
+            # History
+            m1 = MedicalHistoryItem(
+                patient_id=new_patient.id,
+                category="Klinik Tanı",
+                title="Tip 2 Diyabet",
+                details="Oral antidiabetik tedavi altında.",
+                color_tag="blue"
+            )
+            db.add(m1)
+
+            # Symptoms
+            f1 = AISymptomFinding(patient_id=new_patient.id, finding="Göğüste sıkışma ve baskı hissi", checked=True)
+            f2 = AISymptomFinding(patient_id=new_patient.id, finding="Sol kola yayılan uyuşma", checked=True)
+            db.add_all([f1, f2])
+
+            # Probabilities
+            pr1 = AIProbability(patient_id=new_patient.id, condition="Akut Koroner Sendrom", probability=85)
+            db.add(pr1)
+
+            # Action
+            act = AIAction(
+                patient_id=new_patient.id,
+                recommended_dept="Kardiyoloji Polikliniği",
+                required_tests="Troponin I Testi, Acil EKG, Eko"
+            )
+            db.add(act)
+            db.commit()
+
+        return ChatResponse(
+            sender="bot",
+            text="Kardiyoloji (Acil) polikliniği randevunuz ve AI klinik ön raporunuz başarıyla oluşturuldu! Hekimin ekranına anlık sevk kaydı düştü.",
+            options=["Ana Menü"]
+        )
     else:
         return ChatResponse(
             sender="bot",
             text="Sizi anladım. Belirtilerinizi daha detaylı açıklayabilir veya doğrudan bölümler menüsünden randevu alabilirsiniz.",
             options=["Ana Menü", "Yardım Al"]
         )
+
