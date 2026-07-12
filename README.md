@@ -323,6 +323,10 @@ flowchart TD
 
 **Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
 
+**Puan tamamlama mantığı:** Proje boyunca tamamlanması gereken toplam 300 puanlık backlog bulunmaktadır. 3 sprinte bölündüğünde ikinci sprintin 100 puandan oluşması gerektiği kararlaştırıldı.
+
+
+
 
 
 
