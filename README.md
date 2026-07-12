@@ -319,6 +319,11 @@ flowchart TD
 
 # **Sprint 2**
 ## Sprint 2 Raporu: PreClinic Geliştirme ve Entegrasyon Süreci
+**Sprint Notları:** Kullanıcı hikayeleri doğrudan Product Backlog öğelerinin içerisine gömülmüş olup, detaylar ve kabul kriterleri ilgili backlog öğesine tıklandığında okunabilmektedir. 
+
+**Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
+
+
 
 
 
