@@ -335,6 +335,8 @@ Trello panomuzda yer alan kartların renk kodlaması (etiket mantığı) şu şe
  
  <img width="800" height="800" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/f48d99fce0677e99729fd3d2794f7976c9679801/trellosprint2.png">
 
+# **Ürün Durumu**
+
 
 
 
