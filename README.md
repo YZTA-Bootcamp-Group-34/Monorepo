@@ -60,10 +60,6 @@ Proje yönetim sürecimizi ve görev dağılımlarımızı takip ettiğimiz Trel
 
 <img width="700" height="700" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/ab5443d7ffd9d6ee7395d411798d1ad79c9b2c93/sprintboardss.png">
 <img width="1551" height="828" alt="sprintboard2" src="https://github.com/user-attachments/assets/2e26b151-d500-4e95-b0b8-094716b530cb" />
-<img width="1551" height="828" alt="sprintboard2" src="https://github.com/user-attachments/assets/b83ecb57-3a87-4546-801a-ec69b0002b08" />
-
-
-
 
 
 
