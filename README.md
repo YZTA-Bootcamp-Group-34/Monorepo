@@ -59,6 +59,8 @@ BOOTCAMP-34
 Proje yönetim sürecimizi ve görev dağılımlarımızı takip ettiğimiz Trello panomuza ulaşmak için: [Tıklayınız](https://trello.com/invite/b/6a4803339c72c94c17004040/ATTI59563a330b005374347a33f751b27ed55D008F52/my-trello-board).
 
 <img width="700" height="700" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/ab5443d7ffd9d6ee7395d411798d1ad79c9b2c93/sprintboardss.png">
+<img width="1551" height="828" alt="sprintboard2" src="https://github.com/user-attachments/assets/2e26b151-d500-4e95-b0b8-094716b530cb" />
+<img width="1551" height="828" alt="sprintboard2" src="https://github.com/user-attachments/assets/b83ecb57-3a87-4546-801a-ec69b0002b08" />
 
 
 
@@ -334,6 +336,12 @@ Trello panomuzda yer alan kartların renk kodlaması (etiket mantığı) şu şe
 **Daily Scrum (Günlük Toplantılar):**
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
  **Toplantı Kayıtları:** Daily Scrum ekran görüntüleri ve chat geçmişleri klasörüne ulaşmak için: [Tıklayınız](https://github.com/YZTA-Bootcamp-Group-34/Monorepo/tree/dd609f238b70489dee2c6cc7ddb8e4933276a585/sprint2bulu%C5%9Fmalar).
+
+ **Sprint board update:** Sprint board screenshot: Proje yönetim sürecimizi ve görev dağılımlarımızı takip ettiğimiz Trello panomuza ulaşmak için: Tıklayınız.
+ <img width="700" height="700" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/ab5443d7ffd9d6ee7395d411798d1ad79c9b2c93/sprintboardss.png">
+
+
+
 
 
 
