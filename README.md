@@ -335,7 +335,67 @@ Trello panomuzda yer alan kartların renk kodlaması (etiket mantığı) şu şe
  
  <img width="800" height="800" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/f48d99fce0677e99729fd3d2794f7976c9679801/trellosprint2.png">
 
-# **Ürün Durumu**
+# **Ürün Durumu (Görseller)**
+
+Uygulamanın çalışan en son sürümüne ait canlı ürün ekran görüntüleri aşağıda listelenmiştir:
+
+### 📱 1. CarePulse Mobil Hasta Uygulaması (Expo)
+Hastaların semptom analizi yaptığı, poliklinik randevusu aldığı ve ameliyat sonrası takibini gerçekleştirdiği mobil arayüz:
+
+<p align="center">
+  <img src="real-product-ss/mobile-1.png" width="30%" alt="Giriş Ekranı" />
+  <img src="real-product-ss/mobile-2.png" width="30%" alt="Onboarding Slaytları" />
+  <img src="real-product-ss/mobile-3.png" width="30%" alt="Biometrik Kurulum Formu" />
+</p>
+<p align="center">
+  <em>Giriş Ekranı, Onboarding Tanıtım Slaytları ve Biyometrik Profil Kurulum Formu</em>
+</p>
+
+<p align="center">
+  <img src="real-product-ss/mobile-4.png" width="45%" alt="CarePulse Asistan Sohbeti" />
+  <img src="real-product-ss/mobile-5.png" width="45%" alt="Poliklinik Randevu Seçimi" />
+</p>
+<p align="center">
+  <em>CarePulse AI Asistanı Sohbet Ekranı ve Genişletilebilir Poliklinik Hekim/Saat Seçimi</em>
+</p>
+
+---
+
+### 🩺 2. PreClinic Hekim Yönetim Paneli (Next.js)
+Hekimlerin gelen hastaları, AI teşhis oranlarını, kritiklik seviyelerini ve taburcu sonrası takip alarmlarını incelediği web kontrol paneli:
+
+<p align="center">
+  <img src="real-product-ss/panel-1.png" width="100%" alt="Hekim Dashboard" />
+</p>
+<p align="center">
+  <em>Hekim Ana Dashboard Ekranı - Hasta Listesi, İskelet Yükleyiciler (Skeletons) ve Kritik Takip Alarmları</em>
+</p>
+
+<p align="center">
+  <img src="real-product-ss/panel-2.png" width="100%" alt="Hasta Detay ve AI SOAP Raporu" />
+</p>
+<p align="center">
+  <em>Hasta Detay Ekranı - Yapay Zeka SOAP Analiz Raporu ve Klinik Risk Uyarıları</em>
+</p>
+
+<p align="center">
+  <img src="real-product-ss/panel-3.png" width="80%" alt="Hekim Onboarding Branş Kurulumu" />
+</p>
+<p align="center">
+  <em>Yeni Kaydolan Hekimler için Branş Kurulumu ve Lisans No Doğrulama Ekranı</em>
+</p>
+
+---
+
+### ⚙️ 3. PreClinic Güvenli Backend Servisi (FastAPI)
+Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı FastAPI RESTful API:
+
+<p align="center">
+  <img src="real-product-ss/api-docs.png" width="100%" alt="FastAPI Swagger UI" />
+</p>
+<p align="center">
+  <em>FastAPI Swagger UI - Güvenli JWT API Dokümantasyon Arayüzü</em>
+</p>
 
 
 
