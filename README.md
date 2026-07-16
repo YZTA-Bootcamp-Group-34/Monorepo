@@ -326,7 +326,10 @@ Trello panomuzda yer alan kartların renk kodlaması (etiket mantığı) şu şe
      **-Pembe&Mavi Kartlar:** İlk sprint görevleri
 
      **-Sarı Kartlar:** Yazılımcı görevleri
+  
+     **-Mor Kartlar:** Backend görevleri
 
+  
      **-Yeşil Kartlar:** Sunum-Son kontrol görevleri
 
 
