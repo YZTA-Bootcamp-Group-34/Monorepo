@@ -426,7 +426,7 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
   .Frontend aşamasından backend aşamasına geçişteki koordinasyonu kusursuz sağlamak adına,             toplantıların belirli ve sabit zaman aralıklarıyla (periyodik olarak) gerçekleştirilmesi            kararlaştırılmıştır. Bu sayede tasarım revizeleri ve kod entegrasyonları anlık olarak senkronize    edilecektir.
 
 
-* **Gelecek Aşamalar İçin Asset Hazırlığı:** 
+* **Gelecek Sprint Hazırlığı:** 
   . Geliştirme sürecinde herhangi bir aksama yaşanmaması adına, üretim aşamasında görev alan ekip üyelerine sonraki bölümlerde ve ekranlarda ihtiyaç duyulabilecek tüm görsel materyallerin, ikon setlerinin ve arayüz bileşenlerinin yer aldığı detaylı listeler hazırlanmış ve teslim edilmiştir.
 
 
