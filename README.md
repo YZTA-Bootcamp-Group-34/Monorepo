@@ -398,9 +398,9 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 </p>
 
 
-
-
-
+**Sprint Review:**
+*Frontend kısmı tamamen bitirilmiş olup, geriye sadece Backend kısmı kalmıştır.API ksımı dışında istenilen amaçlara ulaşışmıştır.
+*Sprint Review katılımcıları: Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
 
 
 
