@@ -322,9 +322,9 @@ flowchart TD
 
 * **Backlog ve Görev Seçim Mantığı:** Backlog'umuz, kullanıcıların (hasta ve hekim) ihtiyaç duyacağı temel mekanik ve içerikleri en doğru sırayla besleyecek şekilde düzenlenmiştir. İlk sprint, uygulamanın genel tasarım dilini oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır. 2. sprint ise bu oturtulan tasarım dili ve ekran haritaları üzerinden uygulamanın temel mekanik yazılımlarını, veri modellemelerini ve yapay zeka entegrasyon altyapısını kodlamak üzere kurgulanmıştır. Görevler, sprint başına tahmin edilen puan sınırını (100 Puan) geçmeyecek şekilde dengeli bir şekilde dağıtılmıştır.
 Trello panomuzda yer alan kartların renk kodlaması (etiket mantığı) şu şekildedir:
-* **Pembe-Mavi Kartlar:** İlk sprint görevleri
-*  **Sarı Kartlar:** Yazılımcı görevleri
-* **Koyu Yeşil Kartlar:** Sunum-Son kontrol görevleri
+**-Pembe-Mavi Kartlar:** İlk sprint görevleri
+**-Sarı Kartlar:** Yazılımcı görevleri
+**-Koyu Yeşil Kartlar:** Sunum-Son kontrol görevleri
 
 * **Daily Scrum (Günlük Toplantılar):**
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
@@ -399,9 +399,8 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 
 
 * **Sprint Review:**
-* 
-* Frontend kısmı tamamen bitirilmiş olup, geriye sadece Backend kısmı kalmıştır.API ksımı dışında istenilen amaçlara ulaşışmıştır. 
- * Sprint Review katılımcıları: Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
+-Frontend kısmı tamamen bitirilmiş olup, geriye sadece Backend kısmı kalmıştır.API ksımı dışında istenilen amaçlara ulaşışmıştır. 
+-Sprint Review katılımcıları: Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
 
 
 
