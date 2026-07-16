@@ -410,21 +410,21 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 
 * **Sprint Retrospective:**
 
-**-Frontend Sürecinin Başarıyla Tamamlanması:** 
+*-Frontend Sürecinin Başarıyla Tamamlanması:*
  .Sprint 2'nin en büyük başarısı, uygulamanın hem mobil hem de web platformlarındaki tüm  Frontend çalışmalarının %100 oranında tamamlanmış olmasıdır.
 .Hasta ve Hekim arayüzleri, veri görselleştirme panelleri ve "Doğal dilden ICD-10 koduna dönüşüm" ekranlarının tüm görsel kodlamaları, responsive  tasarımları ve sayfa geçişleri eksiksiz şekilde bitirilmiştir. Kod tabanı, sonraki aşamada yapılacak olan backend entegrasyonu için tamamen hazır ve temiz bir hale getirilmiştir.
 
- **Çalışma Gruplarının Rol Dağılımı ve Sinerji:**
+ *Çalışma Gruplarının Rol Dağılımı ve Sinerji:*
   Frontend aşamasının başarıyla noktalanmasının ardından, sonraki sprintlerde tasarımın kalitesini daha da yukarı taşımak ve kalan backend/API entegrasyon sürecini hızlandırmak adına ekibin iki uzmanlık grubuna ayrılmasına karar verilmiştir:
   * **Grup 1 (Tasarım Kalitesi) - Esra Canpolat:** Tamamlanan frontend ekranlarının görsel kalitesini denetleyecek, kullanıcı deneyimini  optimize edecek ve sonraki aşamalar için görsel standartları koruyacaktır.
   * **Grup 2 (Yazılım Ekibi):** Ulaş Can Demirbağ, Alper Duman, Abdulaziz Nalça: Tamamen biten arayüzlerin arkasına kurulacak olan veritabanı, yapay zeka API bağlantıları ve backend süreçlerini üstlenecektir.
 
-* **Toplantı ve İletişim Düzeni:** 
+  *Toplantı ve İletişim Düzeni:*
 .Frontend aşamasından backend aşamasına geçişteki koordinasyonu kusursuz sağlamak adına, toplantıların belirli ve sabit zaman aralıklarıyla (periyodik olarak) gerçekleştirilmesi kararlaştırılmıştır. Bu sayede tasarım revizeleri ve kod entegrasyonları anlık olarak senkronize edilecektir.
 
 
 * **Gelecek Aşamalar İçin Asset Hazırlığı:** 
-  . Geliştirme sürecinde herhangi bir aksama yaşanmaması adına, üretim aşamasında görev alan ekip üyelerine sonraki bölümlerde ve ekranlarda ihtiyaç duyulabilecek tüm görsel materyallerin, ikon setlerinin ve arayüz bileşenlerinin (asset) yer aldığı detaylı listeler hazırlanmış ve teslim edilmiştir.
+  . Geliştirme sürecinde herhangi bir aksama yaşanmaması adına, üretim aşamasında görev alan ekip üyelerine sonraki bölümlerde ve ekranlarda ihtiyaç duyulabilecek tüm görsel materyallerin, ikon setlerinin ve arayüz bileşenlerinin yer aldığı detaylı listeler hazırlanmış ve teslim edilmiştir.
 
 
 
