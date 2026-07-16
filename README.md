@@ -419,8 +419,8 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 
   *Çalışma Gruplarının Rol Dağılımı ve Sinerji:*
    Frontend aşamasının başarıyla noktalanmasının ardından, sonraki sprintlerde tasarımın kalitesini    daha da yukarı taşımak ve kalan backend/API entegrasyon sürecini hızlandırmak adına ekibin iki      uzmanlık grubuna ayrılmasına karar verilmiştir:
-   * **Grup 1 (Tasarım Kalitesi) :** Esra Canpolat:Tamamlanan frontend ekranlarının görsel            kalitesini denetleyecek, kullanıcı deneyimini  optimize edecek ve sonraki aşamalar için görsel      standartları koruyacaktır.
-  * **Grup 2 (Yazılım Ekibi):** Ulaş Can Demirbağ, Alper Duman, Abdulaziz Nalça: Tamamen biten        arayüzlerin arkasına kurulacak olan veritabanı, yapay zeka API bağlantıları ve backend              süreçlerini üstlenecektir.
+   * **Grup 1 (Tasarım Kalitesi) :** Esra Canpolat =>Tamamlanan frontend ekranlarının görsel            kalitesini denetleyecek, kullanıcı deneyimini  optimize edecek ve sonraki aşamalar için görsel      standartları koruyacaktır.
+  * **Grup 2 (Yazılım Ekibi):** Ulaş Can Demirbağ, Alper Duman, Abdulaziz Nalça=> Tamamen biten        arayüzlerin arkasına kurulacak olan veritabanı, yapay zeka API bağlantıları ve backend              süreçlerini üstlenecektir.
 
   *Toplantı ve İletişim Düzeni:*
   .Frontend aşamasından backend aşamasına geçişteki koordinasyonu kusursuz sağlamak adına,             toplantıların belirli ve sabit zaman aralıklarıyla (periyodik olarak) gerçekleştirilmesi            kararlaştırılmıştır. Bu sayede tasarım revizeleri ve kod entegrasyonları anlık olarak senkronize    edilecektir.
