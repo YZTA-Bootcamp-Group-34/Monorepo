@@ -314,24 +314,24 @@ flowchart TD
 
 # **Sprint 2**
 ## Sprint 2 Raporu: PreClinic Geliştirme ve Entegrasyon Süreci
-**Sprint Notları:** Kullanıcı hikayeleri doğrudan Product Backlog öğelerinin içerisine gömülmüş olup, detaylar ve kabul kriterleri ilgili backlog öğesine tıklandığında okunabilmektedir. 
+* **Sprint Notları:** Kullanıcı hikayeleri doğrudan Product Backlog öğelerinin içerisine gömülmüş olup, detaylar ve kabul kriterleri ilgili backlog öğesine tıklandığında okunabilmektedir. 
 
-**Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
+* **Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
 
-**Puan tamamlama mantığı:** Proje boyunca tamamlanması gereken toplam 300 puanlık backlog bulunmaktadır. 3 sprinte bölündüğünde ikinci sprintin 100 puandan oluşması gerektiği kararlaştırıldı.
+* **Puan tamamlama mantığı:** Proje boyunca tamamlanması gereken toplam 300 puanlık backlog bulunmaktadır. 3 sprinte bölündüğünde ikinci sprintin 100 puandan oluşması gerektiği kararlaştırıldı.
 
-**Backlog ve Görev Seçim Mantığı:** Backlog'umuz, kullanıcıların (hasta ve hekim) ihtiyaç duyacağı temel mekanik ve içerikleri en doğru sırayla besleyecek şekilde düzenlenmiştir. İlk sprint, uygulamanın genel tasarım dilini oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır. 2. sprint ise bu oturtulan tasarım dili ve ekran haritaları üzerinden uygulamanın temel mekanik yazılımlarını, veri modellemelerini ve yapay zeka entegrasyon altyapısını kodlamak üzere kurgulanmıştır. Görevler, sprint başına tahmin edilen puan sınırını (100 Puan) geçmeyecek şekilde dengeli bir şekilde dağıtılmıştır.
+* **Backlog ve Görev Seçim Mantığı:** Backlog'umuz, kullanıcıların (hasta ve hekim) ihtiyaç duyacağı temel mekanik ve içerikleri en doğru sırayla besleyecek şekilde düzenlenmiştir. İlk sprint, uygulamanın genel tasarım dilini oturtmak ve en kritik iki akışı (Hasta ve Hekim arayüzleri) çözmek üzere planlanmıştır. 2. sprint ise bu oturtulan tasarım dili ve ekran haritaları üzerinden uygulamanın temel mekanik yazılımlarını, veri modellemelerini ve yapay zeka entegrasyon altyapısını kodlamak üzere kurgulanmıştır. Görevler, sprint başına tahmin edilen puan sınırını (100 Puan) geçmeyecek şekilde dengeli bir şekilde dağıtılmıştır.
 Trello panomuzda yer alan kartların renk kodlaması (etiket mantığı) şu şekildedir:
 * **Pembe-Mavi Kartlar:** İlk sprint görevleri
 *  **Sarı Kartlar:** Yazılımcı görevleri
 * **Koyu Yeşil Kartlar:** Sunum-Son kontrol görevleri
 
-**Daily Scrum (Günlük Toplantılar):**
+* **Daily Scrum (Günlük Toplantılar):**
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
 
- **Toplantı Kayıtları:** Daily Scrum ekran görüntüleri ve chat geçmişleri klasörüne ulaşmak için: [Tıklayınız](https://github.com/YZTA-Bootcamp-Group-34/Monorepo/tree/dd609f238b70489dee2c6cc7ddb8e4933276a585/sprint2bulu%C5%9Fmalar).
+ * **Toplantı Kayıtları:** Daily Scrum ekran görüntüleri ve chat geçmişleri klasörüne ulaşmak için: [Tıklayınız](https://github.com/YZTA-Bootcamp-Group-34/Monorepo/tree/dd609f238b70489dee2c6cc7ddb8e4933276a585/sprint2bulu%C5%9Fmalar).
 
- **Sprint board update:** Sprint board screenshot: Proje yönetim sürecimizi ve görev dağılımlarımızı takip ettiğimiz Trello panomuza ulaşmak için: [Tıklayınız](https://trello.com/b/1D4BDI4I/grup34)
+ * **Sprint board update:** Sprint board screenshot: Proje yönetim sürecimizi ve görev dağılımlarımızı takip ettiğimiz Trello panomuza ulaşmak için: [Tıklayınız](https://trello.com/b/1D4BDI4I/grup34)
  
  <img width="800" height="800" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/f48d99fce0677e99729fd3d2794f7976c9679801/trellosprint2.png">
 
@@ -398,9 +398,10 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 </p>
 
 
-**Sprint Review:**
-* **Frontend kısmı tamamen bitirilmiş olup, geriye sadece Backend kısmı kalmıştır.API ksımı dışında istenilen amaçlara ulaşışmıştır.
-* **Sprint Review katılımcıları:** Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
+* **Sprint Review:**
+* 
+* Frontend kısmı tamamen bitirilmiş olup, geriye sadece Backend kısmı kalmıştır.API ksımı dışında istenilen amaçlara ulaşışmıştır. 
+ * Sprint Review katılımcıları: Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
 
 
 
