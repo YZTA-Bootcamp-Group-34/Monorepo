@@ -443,6 +443,8 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
   
 * **Backlog ve Görev Seçim Mantığı:** İlk iki sprintte tasarım dili oturtulan ve frontend aşamaları %100 bitirilen PreClinic uygulamasının, bu son sprintte API Key entegrasyonları, canlı veri bağlantıları ve sistem testleri tamamlanmıştır. Doktor Paneli başta olmak üzere tüm sistem fonksiyonel olarak çalışır duruma getirilmiş ve uygulama tamamen bitirilmiştir. Görevler, sprint puan sınırını (100 Puan) geçmeyecek şekilde ekipler arasında dengeli dağıtılmıştır.
 
+* **Daily Scrum (Günlük Toplantılar):**
+İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
 
 
 
