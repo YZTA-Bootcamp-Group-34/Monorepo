@@ -431,7 +431,20 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 
 
 
+
 # **Sprint 3**
+## Sprint 3 Raporu: PreClinic Geliştirme ve Entegrasyon Süreci
+
+* **Sprint Notları:** PreClinic Backend Entegrasyonu ve Proje Kapanışı
+
+* **Sprint içinde tamamlanması tahmin edilen puan:** 100 Puan
+
+* **Puan tamamlama mantığı:** Proje boyunca tamamlanması gereken toplam 300 puanlık backlog bulunmaktaydı. 3 sprinte bölünen sürecin son 100 puanlık kapanış evresi de bu sprint başarıyla tamamlanarak toplamda 300 puana ulaşılmış ve proje kapatılmıştır.
+  
+* **Backlog ve Görev Seçim Mantığı:** İlk iki sprintte tasarım dili oturtulan ve frontend aşamaları %100 bitirilen PreClinic uygulamasının, bu son sprintte API Key entegrasyonları, canlı veri bağlantıları ve sistem testleri tamamlanmıştır. Doktor Paneli başta olmak üzere tüm sistem fonksiyonel olarak çalışır duruma getirilmiş ve uygulama tamamen bitirilmiştir. Görevler, sprint puan sınırını (100 Puan) geçmeyecek şekilde ekipler arasında dengeli dağıtılmıştır.
+
+
+
 
 
 
