@@ -37,26 +37,6 @@ BOOTCAMP-34
 <p>Kişiselleştirilebilir Hasta Profili: Avatar seçimi ve bildirim tercihi dahil tüm profil alanları API üzerinden kalıcı olarak saklanır; hekim panelinden manuel yeni hasta kaydı da açılabilir.</p> 
 
 
-# **🌐 Canlı Demo (Production)**
-
-| Servis / Materyal | URL | Açıklama |
-|---|---|---|
-| 🎬 Uygulama Tanıtım Videosu | [YouTube'da İzle (PreClinic)](https://www.youtube.com/watch?v=nNC-Fhe0jNU) | Uçtan uca uygulamanın çalışma mantığı ve tanıtım videosu |
-| 🩺 Hekim Paneli (Next.js) | https://preclinic-panel.vercel.app | Hekim girişi, hasta listesi, SOAP raporları, randevular, ayarlar |
-| ⚙️ Backend API (FastAPI) | https://preclinic-api.vercel.app | REST API — interaktif dokümantasyon: `/docs` |
-| 📱 Mobil Uygulama (Expo) | [Expo EAS Build Sayfası](https://expo.dev/accounts/ulascan54/projects/preclinic-carepulse/builds/49367e4d-e564-4ca6-a0b9-4c2608835f78) \| [Direkt APK İndir](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) | Live Android APK ve Expo Derleme Sayfası (Aşağıdaki Kurulum bölümüne bakınız) |
-
-**Demo Hesaplar (seed verisi):**
-
-| Rol | Kullanıcı Adı | Şifre |
-|---|---|---|
-| Hekim | `dr.alper@preclinic.com` | `123456` |
-| Hekim | `dr.yusuf@preclinic.com` | `123456` |
-| Hasta (TC No) | `12345678901` | `123456` |
-
-> **Not:** Canlı ortam **Supabase (Postgres)** üzerinde çalışır — veriler kalıcıdır. `DATABASE_URL` tanımlı
-> olmadığında backend otomatik olarak SQLite'a düşer (lokalde kök dizindeki `preclinic.db`, Vercel'de `/tmp`
-> üzerinde ephemeral demo modu). Ayrıntılar için "Kalıcı Veritabanı — Supabase" bölümüne bakınız.
 
 # **🤖 Hedef Kitlemiz**
 <p>Hastaneler ve Sağlık Kuruluşları: Randevu sıkışıklığını çözmek ve günlük hasta bakma kapasitesini artırmak isteyen kurumlar.</p> 
@@ -747,6 +727,26 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
   * **Kapanış Çıktıları:** Sunum dosyası ve YouTube tanıtım videosu gibi projenin son adımları da eksiksiz şekilde hazırlanarak teslim aşamasına gelinmiştir.
   *  **Toplantı ve İletişim Düzeni:** Backend entegrasyonu, API bağlantıları, test süreçleri, YouTube tanıtım videosu ve kapanış sunumu gibi projenin tüm son adımlarını kusursuz koordine etmek adına toplantılar periyodik olarak gerçekleştirilmiştir. Bu sıkı iletişim düzeni sayesinde tüm süreçler anlık olarak senkronize edilmiş ve projenin her detayı başarıyla bitirilmiştir.
 
+# **🌐 Canlı Demo (Production)**
+
+| Servis / Materyal | URL | Açıklama |
+|---|---|---|
+| 🎬 Uygulama Tanıtım Videosu | [YouTube'da İzle (PreClinic)](https://www.youtube.com/watch?v=nNC-Fhe0jNU) | Uçtan uca uygulamanın çalışma mantığı ve tanıtım videosu |
+| 🩺 Hekim Paneli (Next.js) | https://preclinic-panel.vercel.app | Hekim girişi, hasta listesi, SOAP raporları, randevular, ayarlar |
+| ⚙️ Backend API (FastAPI) | https://preclinic-api.vercel.app | REST API — interaktif dokümantasyon: `/docs` |
+| 📱 Mobil Uygulama (Expo) | [Expo EAS Build Sayfası](https://expo.dev/accounts/ulascan54/projects/preclinic-carepulse/builds/49367e4d-e564-4ca6-a0b9-4c2608835f78) \| [Direkt APK İndir](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) | Live Android APK ve Expo Derleme Sayfası (Aşağıdaki Kurulum bölümüne bakınız) |
+
+**Demo Hesaplar (seed verisi):**
+
+| Rol | Kullanıcı Adı | Şifre |
+|---|---|---|
+| Hekim | `dr.alper@preclinic.com` | `123456` |
+| Hekim | `dr.yusuf@preclinic.com` | `123456` |
+| Hasta (TC No) | `12345678901` | `123456` |
+
+> **Not:** Canlı ortam **Supabase (Postgres)** üzerinde çalışır — veriler kalıcıdır. `DATABASE_URL` tanımlı
+> olmadığında backend otomatik olarak SQLite'a düşer (lokalde kök dizindeki `preclinic.db`, Vercel'de `/tmp`
+> üzerinde ephemeral demo modu). Ayrıntılar için "Kalıcı Veritabanı — Supabase" bölümüne bakınız.
 
 # 🎬 Uygulama Tanıtım Videosu
 
