@@ -1,19 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, ScrollView, Switch, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 
 import SubPageHeader from "@/components/sub-page-header";
-import { API_URL } from "@/lib/api";
+import { API_URL, apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/auth";
 
 export default function SettingsScreen() {
-  const { signOut } = useAuth();
+  const { signOut, token, profile, refreshProfile } = useAuth();
 
-  // Placeholder preferences (local state only for now).
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  // Notification preference persisted server-side via /api/auth/onboarding.
+  const [notificationsEnabled, setNotificationsEnabled] = useState(profile?.notifications_enabled ?? true);
+  const [notifError, setNotifError] = useState<string | null>(null);
+  // Dark mode stays a labeled "Yakında" placeholder.
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+
+  // Keep the switch in sync when the profile (re)loads.
+  useEffect(() => {
+    setNotificationsEnabled(profile?.notifications_enabled ?? true);
+  }, [profile?.notifications_enabled]);
+
+  const handleToggleNotifications = async (value: boolean) => {
+    // Optimistic UI: flip immediately, revert on failure.
+    setNotificationsEnabled(value);
+    setNotifError(null);
+    try {
+      const res = await apiFetch("/api/auth/onboarding?token=" + encodeURIComponent(token || ""), {
+        method: "POST",
+        body: JSON.stringify({ notifications_enabled: value })
+      });
+      if (!res.ok) throw new Error("save failed");
+      await refreshProfile();
+    } catch (err) {
+      setNotificationsEnabled(!value);
+      setNotifError("Sunucuya ulaşılamadı, tercih kaydedilemedi.");
+      setTimeout(() => setNotifError(null), 4000);
+    }
+  };
 
   const appVersion = Constants.expoConfig?.version ?? "1.0.0";
 
@@ -45,11 +70,12 @@ export default function SettingsScreen() {
             </View>
             <Switch
               value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
+              onValueChange={handleToggleNotifications}
               trackColor={{ false: "#E7EEFF", true: "#86F8C8" }}
               thumbColor={notificationsEnabled ? "#006C4D" : "#737784"}
             />
           </View>
+          {notifError && <Text style={styles.notifErrorText}>{notifError}</Text>}
           <View style={styles.divider} />
           <View style={styles.row}>
             <View style={styles.rowLeft}>
@@ -179,6 +205,13 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#F0F0F5",
     marginLeft: 56,
+  },
+  notifErrorText: {
+    fontSize: 11,
+    color: "#BA1A1A",
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    marginLeft: 40,
   },
   logoutButton: {
     flexDirection: "row",

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Search, Users as UsersIcon } from "lucide-react";
+import { Search, Users as UsersIcon, Plus } from "lucide-react";
 import Image from "next/image";
 import { apiFetch } from "@/lib/api";
 
@@ -100,15 +101,24 @@ export default function PatientListPage() {
             Kayıtlı tüm hastalarınızı görüntüleyin ve arayın
           </span>
         </div>
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-dark absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Hasta adı veya TC ile ara..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-4 py-2 w-72 bg-[#E7EEFF]/30 border border-[#E7EEFF] rounded-lg text-sm text-navy-dark focus:outline-none focus:border-royal-blue focus:ring-1 focus:ring-royal-blue transition"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-dark absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Hasta adı veya TC ile ara..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-2 w-72 bg-[#E7EEFF]/30 border border-[#E7EEFF] rounded-lg text-sm text-navy-dark focus:outline-none focus:border-royal-blue focus:ring-1 focus:ring-royal-blue transition"
+            />
+          </div>
+          <Link
+            href="/patients/new"
+            className="bg-royal-blue text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm hover:bg-opacity-95 transition"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Yeni Hasta</span>
+          </Link>
         </div>
       </header>
 

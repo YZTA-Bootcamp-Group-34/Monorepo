@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Search,
-  Bell,
   Plus,
   ChevronDown,
   Users as UsersIcon,
@@ -17,6 +16,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { apiFetch } from "@/lib/api";
+import { parseDateBadge } from "@/lib/date";
+import NotificationsBell from "@/components/NotificationsBell";
 
 // Pydantic matching schemas
 interface Patient {
@@ -48,7 +49,6 @@ export default function Dashboard() {
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [sortBy, setSortBy] = useState<"Son Randevu" | "Kritiklik">("Son Randevu");
 
   useEffect(() => {
@@ -221,20 +221,7 @@ export default function Dashboard() {
             />
           </div>
           {/* Notification icon */}
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifications((v) => !v)}
-              className="relative p-2 rounded-full hover:bg-slate-100 transition"
-            >
-              <Bell className="w-5 h-5 text-navy-dark" />
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-royal-blue border-2 border-white rounded-full"></span>
-            </button>
-            {showNotifications && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#E7EEFF] rounded-xl shadow-sm p-4 z-20">
-                <span className="text-xs text-slate-dark">Yeni bildirim yok</span>
-              </div>
-            )}
-          </div>
+          <NotificationsBell />
         </div>
       </header>
 
@@ -242,7 +229,7 @@ export default function Dashboard() {
       <section className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/patients"
+            href="/patients/new"
             className="bg-royal-blue text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm hover:bg-opacity-95 transition"
           >
             <Plus className="w-4 h-4" />
@@ -473,10 +460,15 @@ export default function Dashboard() {
               >
                 <div className="flex items-center gap-4">
                   {/* Calendar Widget */}
-                  <div className="flex flex-col items-center justify-center bg-[#E7EEFF]/60 text-royal-blue font-bold px-3 py-2 rounded-xl text-center min-w-16">
-                    <span className="text-[10px] uppercase tracking-wider">{appt.date_str.split(" ")[0]}</span>
-                    <span className="text-base">{appt.date_str.split(" ")[1]}</span>
-                  </div>
+                  {(() => {
+                    const badge = parseDateBadge(appt.date_str);
+                    return (
+                      <div className="flex flex-col items-center justify-center bg-[#E7EEFF]/60 text-royal-blue font-bold px-3 py-2 rounded-xl text-center min-w-16">
+                        <span className="text-[10px] uppercase tracking-wider">{badge.top}</span>
+                        {badge.bottom && <span className="text-base">{badge.bottom}</span>}
+                      </div>
+                    );
+                  })()}
                   <div className="flex flex-col gap-1">
                     <span className="font-semibold text-sm text-[#111C2C]">{appt.title}</span>
                     <span className="text-[11px] text-slate-dark">{appt.detail}</span>

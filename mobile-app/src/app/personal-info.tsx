@@ -70,8 +70,7 @@ export default function PersonalInfoScreen() {
         alert("Bilgiler kaydedilemedi. Lütfen tekrar deneyin.");
       }
     } catch (err) {
-      setSaved(true);
-      alert("Çevrimdışı mod: Bilgileriniz simüle olarak kaydedildi.");
+      alert("Sunucuya ulaşılamadı, değişiklik kaydedilemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.");
     } finally {
       setSaving(false);
     }

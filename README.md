@@ -238,7 +238,11 @@ npm run web
 | PUT | `/api/patients/{id}/action` | Bearer | Sevk/randevu onayı (hekim) |
 | POST | `/api/patients/{id}/followup` | Bearer | Taburcu sonrası takip anketi + anomali kontrolü |
 | GET | `/api/departments` | - | Poliklinik kataloğu |
+| GET | `/api/departments/{id}/doctors` | - | Polikliniğin hekim kadrosu + müsait randevu saatleri |
 | GET/POST | `/api/appointments/history` | Bearer | Randevu geçmişi listeleme/oluşturma |
+| POST | `/api/appointments/book` | Bearer | Randevu oluşturma (tarih ve REC kodu sunucuda üretilir) |
+| GET | `/api/notifications` | Bearer | Hekim paneli bildirimleri (ACİL/KRİTİK TAKİP/sevk verisinden türetilir) |
+| POST | `/api/patients` | Bearer (hekim) | Panelden manuel yeni hasta kaydı |
 
 ---
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { CalendarDays } from "lucide-react";
 import { apiFetch } from "@/lib/api";
+import { parseDateBadge } from "@/lib/date";
 
 interface Appointment {
   id: number;
@@ -100,6 +101,7 @@ export default function AppointmentsPage() {
           ) : (
             appointments.map((appt) => {
               const style = getStatusStyle(appt.status);
+              const badge = parseDateBadge(appt.date_str);
               return (
                 <div
                   key={appt.id}
@@ -108,8 +110,8 @@ export default function AppointmentsPage() {
                   <div className="flex items-center gap-4">
                     {/* Calendar Widget */}
                     <div className="flex flex-col items-center justify-center bg-[#E7EEFF]/60 text-royal-blue font-bold px-3 py-2 rounded-xl text-center min-w-16">
-                      <span className="text-[10px] uppercase tracking-wider">{appt.date_str.split(" ")[0]}</span>
-                      <span className="text-base">{appt.date_str.split(" ")[1]}</span>
+                      <span className="text-[10px] uppercase tracking-wider">{badge.top}</span>
+                      {badge.bottom && <span className="text-base">{badge.bottom}</span>}
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="font-semibold text-sm text-[#111C2C]">{appt.title}</span>

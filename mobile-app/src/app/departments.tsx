@@ -24,13 +24,23 @@ interface Department {
   icon?: string;
 }
 
+interface Doctor {
+  name: string;
+  title?: string;
+  slots: string[];
+}
+
 export default function DepartmentsScreen() {
   const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
+  const [deptDoctors, setDeptDoctors] = useState<Record<string, Doctor[]>>({});
+  const [doctorsLoading, setDoctorsLoading] = useState<string | null>(null);
+  const [booking, setBooking] = useState(false);
 
+  // Offline fallback only — live data comes from /api/departments/{id}/doctors.
   const mockDoctorsData: Record<string, { name: string; times: string[] }[]> = {
     "Kardiyoloji": [
       { name: "Dr. Alper Can", times: ["Bugün 14:00", "Bugün 15:30", "Yarın 10:00"] },
@@ -55,38 +65,69 @@ export default function DepartmentsScreen() {
     ]
   };
 
-  const handleBookAppointment = async (deptName: string, doctorName: string, timeStr: string) => {
-    try {
-      let dateString = "05.07.2026";
-      if (timeStr.includes("Bugün")) {
-        dateString = "Bugün, " + timeStr.replace("Bugün ", "");
-      } else if (timeStr.includes("Yarın")) {
-        dateString = "Yarın, " + timeStr.replace("Yarın ", "");
-      } else {
-        dateString = timeStr;
-      }
+  const getMockDoctors = (deptName: string): Doctor[] =>
+    (mockDoctorsData[deptName] || []).map((d) => ({
+      name: d.name,
+      title: "Uzman Hekim",
+      slots: d.times
+    }));
 
-      const res = await apiFetch("/api/appointments/history", {
+  const fetchDoctors = async (dept: Department) => {
+    setDoctorsLoading(dept.name);
+    try {
+      // Mock fallback departments carry fake ids; if the backend is unreachable
+      // (or the id is unknown server-side) this simply falls back to mock data.
+      const res = await apiFetch(`/api/departments/${dept.id}/doctors`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setDeptDoctors((prev) => ({ ...prev, [dept.name]: data }));
+          return;
+        }
+      }
+      setDeptDoctors((prev) => ({ ...prev, [dept.name]: getMockDoctors(dept.name) }));
+    } catch (err) {
+      setDeptDoctors((prev) => ({ ...prev, [dept.name]: getMockDoctors(dept.name) }));
+    } finally {
+      setDoctorsLoading(null);
+    }
+  };
+
+  const handleToggleDept = (dept: Department) => {
+    const willOpen = selectedDept !== dept.name;
+    setSelectedDept(willOpen ? dept.name : null);
+    if (willOpen && !deptDoctors[dept.name]) {
+      fetchDoctors(dept);
+    }
+  };
+
+  const handleBookAppointment = async (deptName: string, doctorName: string, slotTime: string) => {
+    if (booking) return;
+    setBooking(true);
+    try {
+      const res = await apiFetch("/api/appointments/book", {
         method: "POST",
         body: JSON.stringify({
-          date_str: dateString,
-          title: `${deptName} Randevusu`,
-          detail: "Mobil uygulama üzerinden oluşturuldu.",
-          rec_code: "REC-" + Math.floor(1000 + Math.random() * 9000),
+          department: deptName,
           doctor_name: doctorName,
-          status: "Aktif"
+          slot_time: slotTime
         })
       });
 
       if (res.ok) {
-        alert(`Randevunuz başarıyla alınmıştır!\n\nHekim: ${doctorName}\nTarih/Saat: ${timeStr}\n\nGeçmiş sekmesinden takip edebilirsiniz.`);
+        const data = await res.json();
+        alert(
+          `Randevunuz başarıyla alınmıştır!\n\nHekim: ${data.doctor_name || doctorName}\nSaat: ${slotTime}\nKayıt Kodu: ${data.rec_code}\n\nGeçmiş sekmesinden takip edebilirsiniz.`
+        );
         router.push("/history");
       } else {
-        alert("Randevu alınırken bir hata oluştu.");
+        alert("Randevu alınırken bir hata oluştu. Lütfen tekrar deneyin.");
       }
     } catch (err) {
-      alert(`Randevunuz simüle olarak alınmıştır!\n\nHekim: ${doctorName}\nTarih/Saat: ${timeStr}`);
+      alert(`Randevunuz simüle olarak alınmıştır!\n\nHekim: ${doctorName}\nSaat: ${slotTime}`);
       router.push("/history");
+    } finally {
+      setBooking(false);
     }
   };
 
@@ -225,7 +266,7 @@ export default function DepartmentsScreen() {
                 key={dept.id} 
                 style={styles.card}
                 activeOpacity={0.9}
-                onPress={() => setSelectedDept(isSelected ? null : dept.name)}
+                onPress={() => handleToggleDept(dept)}
               >
                 <View style={styles.cardHeader}>
                   <View style={styles.cardTitleRow}>
@@ -263,25 +304,36 @@ export default function DepartmentsScreen() {
                 {isSelected && (
                   <View style={styles.expandedContent}>
                     <Text style={styles.expandedTitle}>Müsait Hekimler ve Randevu Saatleri:</Text>
-                    {(mockDoctorsData[dept.name] || []).map((doc, docIdx) => (
-                      <View key={docIdx} style={styles.doctorRow}>
-                        <View style={styles.doctorInfo}>
-                          <Ionicons name="person-circle-outline" size={20} color="#003C90" />
-                          <Text style={styles.doctorNameText}>{doc.name}</Text>
+                    {doctorsLoading === dept.name ? (
+                      <ActivityIndicator size="small" color="#003C90" style={{ marginVertical: 10 }} />
+                    ) : (
+                      (deptDoctors[dept.name] || []).map((doc, docIdx) => (
+                        <View key={docIdx} style={styles.doctorRow}>
+                          <View style={styles.doctorInfo}>
+                            <Ionicons name="person-circle-outline" size={20} color="#003C90" />
+                            <View>
+                              <Text style={styles.doctorNameText}>{doc.name}</Text>
+                              {doc.title ? <Text style={styles.doctorTitleText}>{doc.title}</Text> : null}
+                            </View>
+                          </View>
+                          <View style={styles.timesContainer}>
+                            {doc.slots.map((time, timeIdx) => (
+                              <TouchableOpacity
+                                key={timeIdx}
+                                style={[styles.timeButton, booking && { opacity: 0.5 }]}
+                                disabled={booking}
+                                onPress={() => handleBookAppointment(dept.name, doc.name, time)}
+                              >
+                                <Text style={styles.timeButtonText}>{time}</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
                         </View>
-                        <View style={styles.timesContainer}>
-                          {doc.times.map((time, timeIdx) => (
-                            <TouchableOpacity 
-                              key={timeIdx} 
-                              style={styles.timeButton}
-                              onPress={() => handleBookAppointment(dept.name, doc.name, time)}
-                            >
-                              <Text style={styles.timeButtonText}>{time}</Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      </View>
-                    ))}
+                      ))
+                    )}
+                    {doctorsLoading !== dept.name && (deptDoctors[dept.name] || []).length === 0 && (
+                      <Text style={styles.noDoctorsText}>Bu bölüm için müsait hekim bulunamadı.</Text>
+                    )}
                   </View>
                 )}
               </TouchableOpacity>
@@ -492,6 +544,17 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     color: "#111C2C",
+  },
+  doctorTitleText: {
+    fontSize: 10,
+    color: "#737784",
+    marginTop: 1,
+  },
+  noDoctorsText: {
+    fontSize: 11,
+    color: "#737784",
+    textAlign: "center",
+    paddingVertical: 6,
   },
   timesContainer: {
     flexDirection: "row",

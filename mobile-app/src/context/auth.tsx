@@ -13,6 +13,8 @@ export interface PatientProfile {
   weight?: number;
   height?: number;
   chronic_conditions?: string;
+  avatar_url?: string;
+  notifications_enabled?: boolean;
   referral_status?: string;
   referral_date?: string;
   referral_doctor?: string;

@@ -227,6 +227,9 @@ function RootLayoutContent() {
         alert("Onboarding kaydedilemedi.");
       }
     } catch (err) {
+      // Offline demo UX: let the user into the app, but be honest that the
+      // data has not reached the server yet.
+      alert("Sunucuya ulaşılamadı: bilgileriniz şimdilik yalnızca bu cihazda saklandı, bağlantı kurulduğunda sunucuyla eşitlenecek.");
       await completeOnboarding();
     } finally {
       setLoading(false);

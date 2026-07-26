@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { User, Award, ClipboardList, Save, LogOut } from "lucide-react";
-import Image from "next/image";
 import { apiFetch, clearSession } from "@/lib/api";
+import Avatar from "@/components/Avatar";
 
 interface DoctorProfile {
   id: number;
@@ -139,14 +139,12 @@ export default function SettingsPage() {
         <section className="bg-white rounded-2xl border border-[#E7EEFF] p-6 shadow-xs flex flex-col gap-6">
           {/* Profile header */}
           <div className="flex items-center gap-4 pb-6 border-b border-[#E7EEFF]">
-            <div className="relative w-16 h-16 rounded-full overflow-hidden border border-[#E7EEFF]">
-              <Image
-                src={avatarUrl || "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150"}
-                alt={name || "Hekim"}
-                fill
-                className="object-cover"
-              />
-            </div>
+            <Avatar
+              src={avatarUrl}
+              name={name || "Hekim"}
+              className="w-16 h-16 shrink-0 border border-[#E7EEFF]"
+              textClassName="text-lg"
+            />
             <div className="flex flex-col">
               <h2 className="text-lg font-bold text-[#111C2C]">{name || "Hekim"}</h2>
               <span className="text-xs text-slate-dark">{username}</span>

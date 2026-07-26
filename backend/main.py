@@ -123,6 +123,9 @@ class OnboardingRequest(BaseModel):
     weight: Optional[float] = None
     height: Optional[float] = None
     chronic_conditions: Optional[str] = None
+    # Ortak opsiyonel profil alanları
+    avatar_url: Optional[str] = None
+    notifications_enabled: Optional[bool] = None
 
 # --- Authentication Endpoints ---
 @app.post("/api/auth/register")
@@ -218,6 +221,8 @@ def get_current_user_profile(token: Optional[str] = None, authorization: Optiona
                 "weight": profile.weight,
                 "height": profile.height,
                 "chronic_conditions": profile.chronic_conditions,
+                "avatar_url": profile.avatar_url,
+                "notifications_enabled": profile.notifications_enabled if profile.notifications_enabled is not None else True,
                 "referral_status": profile.referral_status,
                 "referral_date": profile.referral_date,
                 "referral_doctor": profile.referral_doctor
@@ -250,6 +255,8 @@ def complete_onboarding(req: OnboardingRequest, token: Optional[str] = None, aut
             profile.branch = req.branch
         if req.bio:
             profile.bio = req.bio
+        if req.avatar_url:
+            profile.avatar_url = req.avatar_url
         db.commit()
     else:
         profile = db.query(Patient).filter(Patient.user_id == user.id).first()
@@ -267,6 +274,10 @@ def complete_onboarding(req: OnboardingRequest, token: Optional[str] = None, aut
             profile.height = req.height
         if req.chronic_conditions is not None:
             profile.chronic_conditions = req.chronic_conditions
+        if req.avatar_url:
+            profile.avatar_url = req.avatar_url
+        if req.notifications_enabled is not None:
+            profile.notifications_enabled = req.notifications_enabled
         db.commit()
         
     return {"success": True, "message": "Onboarding başarıyla tamamlandı."}
@@ -399,6 +410,177 @@ def get_patient_detail(patient_id: int, db: Session = Depends(get_db), current_u
 @app.get("/api/departments", response_model=List[DepartmentSchema])
 def get_departments(db: Session = Depends(get_db)):
     return db.query(Department).all()
+
+# --- Poliklinik Hekimleri & Randevu Saatleri ---
+
+# DoctorProfile kaydı bulunmayan poliklinikler için tamamlayıcı demo hekim kadrosu
+FALLBACK_DOCTORS = {
+    "Kardiyoloji": ["Dr. Hasan Şahin", "Dr. Elif Kaya"],
+    "Nöroloji": ["Dr. Alper Duman", "Dr. Zeynep Arslan"],
+    "Dermatoloji": ["Dr. Yusuf Kurt", "Dr. Selin Demir"],
+    "Göz Hastalıkları": ["Dr. Murat Aydın", "Dr. Aylin Çetin"],
+    "Dahiliye": ["Dr. Kerem Yıldız", "Dr. Fatma Koç"],
+    "Onkoloji": ["Dr. Ahmet Öztürk", "Dr. Leyla Şen"],
+}
+
+SLOT_TEMPLATES = [
+    ["09:00", "10:30", "13:00", "15:30"],
+    ["09:30", "11:00", "14:00", "16:30"],
+    ["10:00", "11:30", "14:30", "16:00"],
+]
+
+class DoctorSlotSchema(BaseModel):
+    name: str
+    title: str
+    slots: List[str]
+
+@app.get("/api/departments/{department_id}/doctors", response_model=List[DoctorSlotSchema])
+def get_department_doctors(department_id: int, db: Session = Depends(get_db)):
+    """Polikliniğin hekim kadrosunu ve müsait randevu saatlerini döndürür.
+
+    Önce gerçek DoctorProfile kayıtları (branş eşleşmesi) kullanılır; kayıt yoksa
+    demo kadro ile tamamlanır. Saatler hekim başına deterministik şablonlardan üretilir.
+    """
+    department = db.query(Department).filter(Department.id == department_id).first()
+    if not department:
+        raise HTTPException(status_code=404, detail="Poliklinik bulunamadı.")
+
+    names = []
+    real_doctors = (
+        db.query(DoctorProfile)
+        .filter(DoctorProfile.branch.isnot(None))
+        .filter(DoctorProfile.branch.like(f"{department.name}%"))
+        .all()
+    )
+    names.extend(d.name for d in real_doctors if d.name)
+    for fallback_name in FALLBACK_DOCTORS.get(department.name, ["Dr. Nöbetçi Hekim"]):
+        if fallback_name not in names:
+            names.append(fallback_name)
+
+    return [
+        DoctorSlotSchema(
+            name=name,
+            title=f"{department.name} Uzmanı",
+            slots=SLOT_TEMPLATES[i % len(SLOT_TEMPLATES)],
+        )
+        for i, name in enumerate(names[:4])
+    ]
+
+# --- Randevu Oluşturma (sunucu taraflı tarih/kod üretimiyle) ---
+
+TURKISH_MONTHS = {1: "OCA", 2: "ŞUB", 3: "MAR", 4: "NİS", 5: "MAY", 6: "HAZ",
+                  7: "TEM", 8: "AĞU", 9: "EYL", 10: "EKİ", 11: "KAS", 12: "ARA"}
+
+class AppointmentBookSchema(BaseModel):
+    department: str
+    doctor_name: str
+    slot_time: str  # örn. "14:00"
+
+@app.post("/api/appointments/book", response_model=AppointmentHistorySchema)
+def book_appointment(
+    req: AppointmentBookSchema,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Mobil uygulamadan randevu oluşturur.
+
+    Tarih (panel takvim bileşeninin beklediği 'TEM 26' formatında) ve REC kodu
+    sunucu tarafında üretilir; böylece panel/mobil veri tutarlılığı korunur.
+    """
+    now = datetime.now()
+    date_str = f"{TURKISH_MONTHS[now.month]} {now.day:02d}"
+
+    patient_name = "Hasta"
+    if current_user.role == "patient":
+        patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+        if patient:
+            patient_name = patient.name
+
+    last_id = db.query(AppointmentHistory).count()
+    record = AppointmentHistory(
+        date_str=date_str,
+        title=f"{req.department} Randevusu",
+        detail=f"{patient_name} - Saat {req.slot_time}",
+        rec_code=f"REC: #{5600 + last_id + 1}",
+        doctor_name=req.doctor_name.upper(),
+        status="Onaylandı",
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+    return record
+
+# --- Hekim Paneli Bildirimleri (canlı veriden türetilir) ---
+
+class NotificationSchema(BaseModel):
+    id: int
+    patient_id: int
+    type: str   # "acil" | "kritik_takip" | "alarm" | "sevk"
+    title: str
+    detail: str
+
+@app.get("/api/notifications", response_model=List[NotificationSchema])
+def get_notifications(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Zil menüsü için bildirimleri hasta verisinden türetir (ayrı tablo gerekmez)."""
+    notifications = []
+    counter = 1
+    for p in db.query(Patient).all():
+        if p.status == "ACİL":
+            notifications.append(NotificationSchema(
+                id=counter, patient_id=p.id, type="acil",
+                title=f"ACİL: {p.name}",
+                detail=f"Kritiklik %{int((p.criticality or 0) * 100)} — öncelikli inceleme gerekli.",
+            ))
+        elif p.status == "KRİTİK TAKİP" or (p.followup_status or "").startswith("ALARM"):
+            notifications.append(NotificationSchema(
+                id=counter, patient_id=p.id, type="kritik_takip",
+                title=f"KRİTİK TAKİP: {p.name}",
+                detail=p.followup_status or "Taburcu sonrası takip alarmı.",
+            ))
+        elif p.referral_status == "CONFIRMED":
+            notifications.append(NotificationSchema(
+                id=counter, patient_id=p.id, type="sevk",
+                title=f"Sevk Onaylandı: {p.name}",
+                detail=f"{p.referral_doctor or 'Hekim'} — {p.referral_date or ''}",
+            ))
+        else:
+            continue
+        counter += 1
+    return notifications
+
+# --- Hekim Panelinden Yeni Hasta Kaydı ---
+
+class PatientCreateSchema(BaseModel):
+    name: str
+    tc_no: str
+    age: int
+    gender: str
+    blood_type: Optional[str] = ""
+    chronic_conditions: Optional[str] = ""
+    status: Optional[str] = "RUTİN KONTROL"
+
+@app.post("/api/patients", response_model=PatientListSchema)
+def create_patient(
+    req: PatientCreateSchema,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != "doctor":
+        raise HTTPException(status_code=403, detail="Bu işlem için hekim yetkisi gereklidir.")
+    if db.query(Patient).filter(Patient.tc_no == req.tc_no).first():
+        raise HTTPException(status_code=400, detail="Bu TC kimlik numarası zaten kayıtlı.")
+
+    patient = Patient(
+        name=req.name, tc_no=req.tc_no, age=req.age, gender=req.gender,
+        blood_type=req.blood_type or "", weight=0.0, height=0.0,
+        chronic_conditions=req.chronic_conditions or "",
+        status=req.status or "RUTİN KONTROL", criticality=0.1,
+        son_randevu="Yeni Manuel Kayıt",
+    )
+    db.add(patient)
+    db.commit()
+    db.refresh(patient)
+    return patient
 
 class AppointmentHistoryCreateSchema(BaseModel):
     date_str: str

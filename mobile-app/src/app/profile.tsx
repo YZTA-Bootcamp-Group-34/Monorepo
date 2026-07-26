@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  Image, 
-  TouchableOpacity, 
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
   ScrollView,
-  TextInput
+  TextInput,
+  Modal,
+  ActivityIndicator
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,11 +17,51 @@ import { useRouter } from "expo-router";
 import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/auth";
 
+const DEFAULT_AVATAR = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150";
+
+const AVATAR_PRESETS = [
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150",
+  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150"
+];
+
 export default function ProfileScreen() {
   const router = useRouter();
-  const { profile, signOut } = useAuth();
+  const { token, profile, signOut, refreshProfile } = useAuth();
   const [painLevel, setPainLevel] = useState(5);
   const [fever, setFever] = useState("36.5");
+  const [avatarModalVisible, setAvatarModalVisible] = useState(false);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [localAvatar, setLocalAvatar] = useState<string | null>(null);
+  const [avatarNote, setAvatarNote] = useState<string | null>(null);
+
+  const handleSelectAvatar = async (url: string) => {
+    if (avatarSaving) return;
+    setAvatarSaving(true);
+    try {
+      const res = await apiFetch("/api/auth/onboarding?token=" + encodeURIComponent(token || ""), {
+        method: "POST",
+        body: JSON.stringify({ avatar_url: url })
+      });
+      if (res.ok) {
+        await refreshProfile();
+        setLocalAvatar(null);
+        setAvatarNote(null);
+      } else {
+        setLocalAvatar(url);
+        setAvatarNote("Sunucuya kaydedilemedi; fotoğraf yalnızca bu cihazda güncellendi.");
+      }
+    } catch (err) {
+      setLocalAvatar(url);
+      setAvatarNote("Çevrimdışı mod: fotoğraf yalnızca bu cihazda güncellendi.");
+    } finally {
+      setAvatarSaving(false);
+      setAvatarModalVisible(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -59,8 +101,7 @@ export default function ProfileScreen() {
         alert("Bağlantı hatası oluştu.");
       }
     } catch (err) {
-      setSurveyCompleted(true);
-      alert("Takip bilgileriniz başarıyla simüle olarak iletildi.");
+      alert("Sunucuya ulaşılamadı, takip raporu gönderilemedi. Lütfen bağlantınızı kontrol edip tekrar deneyin.");
     } finally {
       setSubmitting(false);
     }
@@ -73,7 +114,7 @@ export default function ProfileScreen() {
     blood: profile?.blood_type || "0 Rh+",
     weight: profile?.weight ? `${profile.weight} kg` : "47 kg",
     height: profile?.height ? `${profile.height} cm` : "172 cm",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"
+    avatar: localAvatar ?? profile?.avatar_url ?? DEFAULT_AVATAR
   };
 
   const menuItems = [
@@ -90,13 +131,50 @@ export default function ProfileScreen() {
         <View style={styles.profileHeader}>
           <View style={styles.avatarWrapper}>
             <Image source={{ uri: user.avatar }} style={styles.avatar} />
-            <TouchableOpacity style={styles.editButton}>
+            <TouchableOpacity style={styles.editButton} onPress={() => setAvatarModalVisible(true)}>
               <Ionicons name="pencil" size={14} color="white" />
             </TouchableOpacity>
           </View>
           <Text style={styles.userName}>{user.name}</Text>
           <Text style={styles.userTc}>TC NO: {user.tc_no}</Text>
+          {avatarNote && <Text style={styles.avatarNote}>{avatarNote}</Text>}
         </View>
+
+        {/* Avatar selection modal */}
+        <Modal
+          visible={avatarModalVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setAvatarModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Profil Fotoğrafı Seçin</Text>
+              <View style={styles.avatarGrid}>
+                {AVATAR_PRESETS.map((url) => (
+                  <TouchableOpacity
+                    key={url}
+                    onPress={() => handleSelectAvatar(url)}
+                    disabled={avatarSaving}
+                  >
+                    <Image
+                      source={{ uri: url }}
+                      style={[styles.avatarOption, user.avatar === url && styles.avatarOptionSelected]}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {avatarSaving && <ActivityIndicator size="small" color="#003C90" style={{ marginTop: 4 }} />}
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setAvatarModalVisible(false)}
+                disabled={avatarSaving}
+              >
+                <Text style={styles.modalCloseText}>Vazgeç</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
@@ -272,6 +350,64 @@ const styles = StyleSheet.create({
     color: "#737784",
     letterSpacing: 1,
     fontWeight: "600",
+  },
+  avatarNote: {
+    fontSize: 11,
+    color: "#BA1A1A",
+    marginTop: 8,
+    textAlign: "center",
+    paddingHorizontal: 24,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(17, 28, 44, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  modalCard: {
+    width: "100%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#E7EEFF",
+    padding: 20,
+    alignItems: "center",
+    gap: 16,
+  },
+  modalTitle: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: "#111C2C",
+  },
+  avatarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 12,
+  },
+  avatarOption: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 3,
+    borderColor: "#E7EEFF",
+  },
+  avatarOptionSelected: {
+    borderColor: "#86F8C8",
+  },
+  modalCloseButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E7EEFF",
+    backgroundColor: "#F9F9FF",
+  },
+  modalCloseText: {
+    fontSize: 13,
+    fontWeight: "bold",
+    color: "#003C90",
   },
   statsRow: {
     flexDirection: "row",

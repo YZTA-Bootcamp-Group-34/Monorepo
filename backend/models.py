@@ -26,6 +26,7 @@ class Patient(Base):
     email = Column(String, unique=True, index=True, nullable=True)
     hashed_password = Column(String, nullable=True)
     onboarded = Column(Boolean, default=False)
+    notifications_enabled = Column(Boolean, default=True)
 
     medical_history = relationship("MedicalHistoryItem", back_populates="patient", cascade="all, delete-orphan")
     symptom_findings = relationship("AISymptomFinding", back_populates="patient", cascade="all, delete-orphan")

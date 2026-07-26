@@ -20,6 +20,10 @@ interface HistoryRecord {
   department: string;
   urgency: "urgent" | "normal" | "past";
   iconName: string;
+  detail?: string;
+  recCode?: string;
+  doctorName?: string;
+  status?: string;
 }
 
 interface GroupedRecords {
@@ -48,7 +52,11 @@ const MOCK_RECORDS: GroupedRecords[] = [
         date: "12 Mayıs 2025",
         department: "Nöroloji Önerildi",
         urgency: "normal",
-        iconName: "medical"
+        iconName: "medical",
+        detail: "AI ön tanı sonucu Nöroloji polikliniğine yönlendirme yapıldı.",
+        recCode: "REC: #1042",
+        doctorName: "Dr. Esra Kar",
+        status: "Tamamlandı"
       },
       {
         id: "2",
@@ -56,7 +64,11 @@ const MOCK_RECORDS: GroupedRecords[] = [
         date: "28 Nisan 2025",
         department: "Kardiyoloji (Acil)",
         urgency: "urgent",
-        iconName: "heart-half"
+        iconName: "heart-half",
+        detail: "Acil öncelikli değerlendirme; EKG ve efor testi önerildi.",
+        recCode: "REC: #0987",
+        doctorName: "Dr. Alper Can",
+        status: "Acil Takip"
       },
       {
         id: "3",
@@ -64,7 +76,11 @@ const MOCK_RECORDS: GroupedRecords[] = [
         date: "05 Mart 2025",
         department: "Göğüs Hastalıkları Önerildi",
         urgency: "normal",
-        iconName: "pulse"
+        iconName: "pulse",
+        detail: "Belirtiler mevsimsel alerji ile uyumlu bulundu.",
+        recCode: "REC: #0871",
+        doctorName: "Dr. Selim Tekin",
+        status: "Tamamlandı"
       }
     ]
   },
@@ -77,7 +93,11 @@ const MOCK_RECORDS: GroupedRecords[] = [
         date: "14 Kasım 2024",
         department: "Diş Hekimliği",
         urgency: "past",
-        iconName: "heart"
+        iconName: "heart",
+        detail: "Rutin diş kontrolü sonrası tedavi tamamlandı.",
+        recCode: "REC: #0653",
+        doctorName: "Dr. Canan Yılmaz",
+        status: "Arşivlendi"
       },
       {
         id: "5",
@@ -85,7 +105,11 @@ const MOCK_RECORDS: GroupedRecords[] = [
         date: "22 Ağustos 2024",
         department: "Dermatoloji",
         urgency: "past",
-        iconName: "flask"
+        iconName: "flask",
+        detail: "Topikal tedavi uygulandı, kontrol randevusu gerekmiyor.",
+        recCode: "REC: #0512",
+        doctorName: "Dr. Ahmet Kaya",
+        status: "Arşivlendi"
       }
     ]
   }
@@ -120,7 +144,11 @@ function groupAppointments(items: ApiAppointment[]): GroupedRecords[] {
       date: item.date_str || "",
       department: [item.doctor_name, item.status].filter(Boolean).join(" • ") || item.detail || "",
       urgency: mapUrgency(item.status),
-      iconName: mapIcon(item.title)
+      iconName: mapIcon(item.title),
+      detail: item.detail,
+      recCode: item.rec_code,
+      doctorName: item.doctor_name,
+      status: item.status
     };
 
     if (!groups[groupKey]) {
@@ -145,6 +173,7 @@ export default function HistoryScreen() {
   const [recordsData, setRecordsData] = useState<GroupedRecords[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -260,40 +289,86 @@ export default function HistoryScreen() {
                 <Text style={styles.groupCount}>{group.records.length} Kayıt</Text>
               </View>
 
-              {group.records.map((rec) => (
-                <TouchableOpacity key={rec.id} style={styles.recordCard}>
-                  <View style={styles.cardLeft}>
-                    {/* Icon wrapper */}
-                    <View style={styles.iconWrapper}>
+              {group.records.map((rec) => {
+                const isExpanded = expandedId === rec.id;
+                return (
+                  <TouchableOpacity
+                    key={rec.id}
+                    style={styles.recordCard}
+                    activeOpacity={0.8}
+                    onPress={() => setExpandedId(isExpanded ? null : rec.id)}
+                  >
+                    <View style={styles.cardMain}>
+                      <View style={styles.cardLeft}>
+                        {/* Icon wrapper */}
+                        <View style={styles.iconWrapper}>
+                          <Ionicons
+                            name={
+                              rec.iconName === "medical" ? "bandage-outline" :
+                              rec.iconName === "heart-half" ? "heart-dislike-outline" :
+                              rec.iconName === "pulse" ? "fitness-outline" :
+                              rec.iconName === "heart" ? "happy-outline" : "color-palette-outline"
+                            }
+                            size={20}
+                            color="#003C90"
+                          />
+                        </View>
+                        <View style={styles.textWrapper}>
+                          <Text style={styles.recordTitle}>{rec.title}</Text>
+                          <Text style={styles.recordDate}>{rec.date}</Text>
+                          <View style={styles.urgencyRow}>
+                            <Ionicons
+                              name={getUrgencyIcon(rec.urgency)}
+                              size={14}
+                              color={getUrgencyColor(rec.urgency)}
+                            />
+                            <Text style={[styles.urgencyText, { color: getUrgencyColor(rec.urgency) }]}>
+                              {rec.department}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
                       <Ionicons
-                        name={
-                          rec.iconName === "medical" ? "bandage-outline" :
-                          rec.iconName === "heart-half" ? "heart-dislike-outline" :
-                          rec.iconName === "pulse" ? "fitness-outline" :
-                          rec.iconName === "heart" ? "happy-outline" : "color-palette-outline"
-                        }
-                        size={20}
-                        color="#003C90"
+                        name="chevron-forward"
+                        size={18}
+                        color="#C3C6D5"
+                        style={isExpanded ? { transform: [{ rotate: "90deg" }] } : undefined}
                       />
                     </View>
-                    <View style={styles.textWrapper}>
-                      <Text style={styles.recordTitle}>{rec.title}</Text>
-                      <Text style={styles.recordDate}>{rec.date}</Text>
-                      <View style={styles.urgencyRow}>
-                        <Ionicons
-                          name={getUrgencyIcon(rec.urgency)}
-                          size={14}
-                          color={getUrgencyColor(rec.urgency)}
-                        />
-                        <Text style={[styles.urgencyText, { color: getUrgencyColor(rec.urgency) }]}>
-                          {rec.department}
-                        </Text>
+
+                    {isExpanded && (
+                      <View style={styles.detailSection}>
+                        {rec.detail ? (
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Detay</Text>
+                            <Text style={styles.detailValue}>{rec.detail}</Text>
+                          </View>
+                        ) : null}
+                        {rec.recCode ? (
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Kayıt Kodu</Text>
+                            <Text style={styles.detailValue}>{rec.recCode}</Text>
+                          </View>
+                        ) : null}
+                        {rec.doctorName ? (
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Hekim</Text>
+                            <Text style={styles.detailValue}>{rec.doctorName}</Text>
+                          </View>
+                        ) : null}
+                        {rec.status ? (
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Durum</Text>
+                            <Text style={[styles.detailValue, { color: getUrgencyColor(rec.urgency), fontWeight: "700" }]}>
+                              {rec.status}
+                            </Text>
+                          </View>
+                        ) : null}
                       </View>
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color="#C3C6D5" />
-                </TouchableOpacity>
-              ))}
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           ))}
 
@@ -388,10 +463,36 @@ const styles = StyleSheet.create({
     borderColor: "#E7EEFF",
     borderRadius: 12,
     padding: 16,
+    marginBottom: 8,
+  },
+  cardMain: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
+  },
+  detailSection: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F5",
+    paddingTop: 12,
+    gap: 8,
+  },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  detailLabel: {
+    width: 82,
+    fontSize: 11,
+    fontWeight: "bold",
+    color: "#737784",
+  },
+  detailValue: {
+    flex: 1,
+    fontSize: 12,
+    color: "#111C2C",
+    lineHeight: 17,
   },
   cardLeft: {
     flexDirection: "row",

@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LayoutGrid, Users, CalendarDays, Settings, LogOut } from "lucide-react";
-import Image from "next/image";
-import { clearSession } from "@/lib/api";
+import { apiFetch, clearSession } from "@/lib/api";
+import Avatar from "@/components/Avatar";
 
 const navItems = [
   { href: "/", label: "Panel", icon: LayoutGrid },
@@ -18,9 +18,35 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [doctorName, setDoctorName] = useState("Hekim");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [diplomaNo, setDiplomaNo] = useState<string | null>(null);
 
   useEffect(() => {
     setDoctorName(localStorage.getItem("doctor_name") || "Hekim");
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    let cancelled = false;
+    const fetchProfile = async () => {
+      try {
+        const res = await apiFetch("/api/auth/me");
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        const profile = data?.profile ?? data;
+        if (cancelled) return;
+        if (profile?.name) setDoctorName(profile.name);
+        setAvatarUrl(profile?.avatar_url || null);
+        setDiplomaNo(profile?.diploma_no || null);
+      } catch {
+        // Backend unreachable: keep localStorage name + fallbacks.
+      }
+    };
+    fetchProfile();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const isActive = (href: string) =>
@@ -41,14 +67,7 @@ export default function Sidebar() {
 
         {/* Doctor Info Card */}
         <div className="flex items-center gap-3 p-3 bg-white rounded-xl shadow-xs border border-[#E7EEFF]">
-          <div className="relative w-11 h-11 rounded-full overflow-hidden">
-            <Image
-              src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150"
-              alt={doctorName}
-              fill
-              className="object-cover"
-            />
-          </div>
+          <Avatar src={avatarUrl} name={doctorName} className="w-11 h-11 shrink-0" textClassName="text-sm" />
           <div className="flex flex-col min-w-0">
             <span className="font-semibold text-sm text-[#111C2C] truncate">{doctorName}</span>
             <span className="text-[11px] text-slate-dark">Hekim Paneli</span>
@@ -84,7 +103,7 @@ export default function Sidebar() {
           <span>Çıkış Yap</span>
         </button>
         <div className="text-[10px] text-slate-dark font-mono">
-          TIBBİ ID: 88291
+          TIBBİ ID: {diplomaNo || "—"}
         </div>
       </div>
     </aside>

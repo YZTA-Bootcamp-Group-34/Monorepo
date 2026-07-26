@@ -6,14 +6,15 @@ import {
   TextInput, 
   TouchableOpacity, 
   ScrollView, 
-  KeyboardAvoidingView, 
+  KeyboardAvoidingView,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
+  Animated
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-import { apiFetch } from "@/lib/api";
+import { apiFetch, MOCK_TOKEN } from "@/lib/api";
 import { useAuth } from "@/context/auth";
 
 interface Message {
@@ -23,8 +24,18 @@ interface Message {
   options?: string[];
 }
 
+// Rotating phrases for the simulated voice dictation demo.
+const DEMO_DICTATION_PHRASES = [
+  "Ateşim var ve halsizim",
+  "Başım ağrıyor ve midem bulanıyor",
+  "Göğsümde baskı hissediyorum",
+  "Öksürüğüm var ve nefes almakta zorlanıyorum"
+];
+
+const WAVE_BASE_HEIGHTS = [35, 50, 25, 60, 40, 30];
+
 export default function ChatbotScreen() {
-  const { profile } = useAuth();
+  const { profile, token } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -47,7 +58,10 @@ export default function ChatbotScreen() {
   const [notification, setNotification] = useState<ReferralNotification | null>(null);
 
   useEffect(() => {
-    const patientId = profile?.id ?? 1;
+    // Mock-token / guest mode has no backend identity: skip polling entirely
+    // to avoid silent 401 spam every 6 seconds.
+    if (!profile || token === MOCK_TOKEN) return;
+    const patientId = profile.id;
     const checkReferrals = async () => {
       try {
         const res = await apiFetch(`/api/patients/${patientId}`);
@@ -70,11 +84,77 @@ export default function ChatbotScreen() {
     checkReferrals();
     const interval = setInterval(checkReferrals, 6000);
     return () => clearInterval(interval);
-  }, [profile?.id]);
+  }, [profile, token]);
 
   // Stable chat session id: real patient id when authenticated, random guest id otherwise.
   const guestSessionRef = useRef(`guest-${Math.random().toString(36).slice(2, 10)}`);
   const sessionId = profile ? `patient-${profile.id}` : guestSessionRef.current;
+
+  // --- Simulated voice dictation (demo) ---
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const phraseIndexRef = useRef(0);
+  const listenTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const waveAnims = useRef(WAVE_BASE_HEIGHTS.map(() => new Animated.Value(0))).current;
+  const micPulse = useRef(new Animated.Value(1)).current;
+
+  const stopListeningAnimations = () => {
+    waveAnims.forEach((anim) => {
+      anim.stopAnimation();
+      anim.setValue(0);
+    });
+    micPulse.stopAnimation();
+    micPulse.setValue(1);
+  };
+
+  const startListeningAnimations = () => {
+    waveAnims.forEach((anim, i) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, { toValue: 1, duration: 220 + i * 55, useNativeDriver: false }),
+          Animated.timing(anim, { toValue: 0, duration: 220 + i * 55, useNativeDriver: false })
+        ])
+      ).start();
+    });
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(micPulse, { toValue: 1.15, duration: 500, useNativeDriver: true }),
+        Animated.timing(micPulse, { toValue: 1, duration: 500, useNativeDriver: true })
+      ])
+    ).start();
+  };
+
+  const handleMicPress = () => {
+    if (isListening) {
+      // Cancel the ongoing "listening" session.
+      if (listenTimeoutRef.current) clearTimeout(listenTimeoutRef.current);
+      stopListeningAnimations();
+      setIsListening(false);
+      return;
+    }
+    setIsListening(true);
+    startListeningAnimations();
+    listenTimeoutRef.current = setTimeout(() => {
+      const phrase = DEMO_DICTATION_PHRASES[phraseIndexRef.current % DEMO_DICTATION_PHRASES.length];
+      phraseIndexRef.current += 1;
+      setTranscript(phrase);
+      stopListeningAnimations();
+      setIsListening(false);
+    }, 2500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (listenTimeoutRef.current) clearTimeout(listenTimeoutRef.current);
+    };
+  }, []);
+
+  const handleSendTranscript = () => {
+    const text = transcript.trim();
+    if (!text || isListening) return;
+    setTranscript("");
+    handleSendMessage(text);
+  };
 
   const handleSendMessage = async (textToSend: string) => {
     if (!textToSend.trim()) return;
@@ -220,28 +300,58 @@ export default function ChatbotScreen() {
             {/* Wave animation and microphone indicators */}
             <View style={styles.voiceIndicatorWrapper}>
               <View style={styles.waveContainer}>
-                <View style={[styles.waveBar, { height: 35 }]} />
-                <View style={[styles.waveBar, { height: 50 }]} />
-                <View style={[styles.waveBar, { height: 25 }]} />
-                <View style={[styles.waveBar, { height: 60 }]} />
-                <View style={[styles.waveBar, { height: 40 }]} />
-                <View style={[styles.waveBar, { height: 30 }]} />
+                {WAVE_BASE_HEIGHTS.map((h, i) => (
+                  <Animated.View
+                    key={i}
+                    style={[
+                      styles.waveBar,
+                      {
+                        height: isListening
+                          ? waveAnims[i].interpolate({ inputRange: [0, 1], outputRange: [h * 0.4, h] })
+                          : h,
+                        backgroundColor: isListening ? "#BA1A1A" : "#003C90"
+                      }
+                    ]}
+                  />
+                ))}
               </View>
               <View style={styles.voiceStatusContainer}>
-                <View style={styles.statusDot} />
-                <Text style={styles.voiceStatusText}>SANAL ASİSTAN AKTİF</Text>
+                <View style={[styles.statusDot, isListening && { backgroundColor: "#BA1A1A" }]} />
+                <Text style={[styles.voiceStatusText, isListening && { color: "#BA1A1A" }]}>
+                  {isListening ? "DİNLENİYOR..." : "SANAL ASİSTAN AKTİF"}
+                </Text>
               </View>
+              <Text style={styles.voiceHintText}>(Demo dikte)</Text>
             </View>
 
+            {/* Editable transcript bubble filled by the simulated dictation */}
+            {transcript !== "" && !isListening && (
+              <View style={styles.transcriptBubble}>
+                <Text style={styles.transcriptLabel}>Algılanan metin — düzenleyip gönderebilirsiniz:</Text>
+                <TextInput
+                  value={transcript}
+                  onChangeText={setTranscript}
+                  multiline
+                  style={styles.transcriptInput}
+                  placeholder="Dikte metni..."
+                  placeholderTextColor="#737784"
+                />
+              </View>
+            )}
+
             <View style={styles.voiceInputArea}>
-              <TouchableOpacity style={styles.micCircleButton}>
-                <Ionicons name="mic" size={24} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.sendButton}
-                onPress={() => {
-                  handleSendMessage("Ateşim var ve halsizim"); // Simulated voice input text
-                }}
+              <Animated.View style={{ transform: [{ scale: micPulse }] }}>
+                <TouchableOpacity
+                  style={[styles.micCircleButton, isListening && { backgroundColor: "#BA1A1A" }]}
+                  onPress={handleMicPress}
+                >
+                  <Ionicons name={isListening ? "stop" : "mic"} size={24} color="white" />
+                </TouchableOpacity>
+              </Animated.View>
+              <TouchableOpacity
+                style={[styles.sendButton, (!transcript.trim() || isListening) && { opacity: 0.4 }]}
+                disabled={!transcript.trim() || isListening}
+                onPress={handleSendTranscript}
               >
                 <Ionicons name="paper-plane" size={22} color="#003C90" />
               </TouchableOpacity>
@@ -263,9 +373,6 @@ export default function ChatbotScreen() {
 
             {/* TextInput bar */}
             <View style={styles.textInputArea}>
-              <TouchableOpacity style={styles.attachButton}>
-                <Ionicons name="attach-outline" size={24} color="#737784" />
-              </TouchableOpacity>
               <TextInput
                 value={inputText}
                 onChangeText={setInputText}
@@ -457,9 +564,6 @@ const styles = StyleSheet.create({
     borderTopColor: "#E7EEFF",
     gap: 12,
   },
-  attachButton: {
-    padding: 4,
-  },
   textInput: {
     flex: 1,
     height: 40,
@@ -511,6 +615,38 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#006C4D",
     letterSpacing: 1,
+  },
+  voiceHintText: {
+    fontSize: 10,
+    color: "#737784",
+    marginTop: 4,
+  },
+  transcriptBubble: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    backgroundColor: "#E7EEFF",
+    borderWidth: 1,
+    borderColor: "#C3C6D5",
+    borderRadius: 16,
+    padding: 12,
+    gap: 6,
+  },
+  transcriptLabel: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#003C90",
+    letterSpacing: 0.3,
+  },
+  transcriptInput: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#E7EEFF",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+    color: "#111C2C",
+    minHeight: 40,
   },
   voiceInputArea: {
     height: 72,

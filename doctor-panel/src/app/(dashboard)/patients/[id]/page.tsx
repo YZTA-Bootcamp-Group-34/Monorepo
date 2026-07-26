@@ -4,9 +4,8 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { 
-  Bell, 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   CheckCircle2, 
   Activity, 
   Stethoscope, 
@@ -15,8 +14,9 @@ import {
   ChevronRight,
   AlertTriangle
 } from "lucide-react";
-import Image from "next/image";
 import { apiFetch } from "@/lib/api";
+import NotificationsBell from "@/components/NotificationsBell";
+import Avatar from "@/components/Avatar";
 
 interface MedicalHistoryItem {
   category: string;
@@ -69,7 +69,6 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
   const [patient, setPatient] = useState<PatientDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleConfirmAction = async () => {
     setSubmitting(true);
@@ -83,9 +82,8 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
       } else {
         toast.error("Bir hata oluştu.");
       }
-    } catch (err) {
-      toast.success("Randevu ve Sevk İşlemi Onaylandı! (Simüle)");
-      router.push("/");
+    } catch {
+      toast.error("Sunucuya ulaşılamadı, işlem kaydedilemedi");
     } finally {
       setSubmitting(false);
     }
@@ -231,20 +229,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
           </Link>
           <h1 className="text-2xl font-bold text-navy-dark">Hasta Özeti</h1>
         </div>
-        <div className="relative">
-          <button
-            onClick={() => setShowNotifications((v) => !v)}
-            className="relative p-2 rounded-full hover:bg-slate-100 transition"
-          >
-            <Bell className="w-5 h-5 text-navy-dark" />
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-royal-blue border-2 border-white rounded-full"></span>
-          </button>
-          {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#E7EEFF] rounded-xl shadow-sm p-4 z-20">
-              <span className="text-xs text-slate-dark">Yeni bildirim yok</span>
-            </div>
-          )}
-        </div>
+        <NotificationsBell />
       </header>
 
       {/* Dynamic AI Warnings (Uzun Süreli Medikal Hafıza Alerts) */}
@@ -287,14 +272,12 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
                 </span>
               </div>
               
-              <div className="relative w-16 h-16 rounded-full overflow-hidden border border-[#E7EEFF]">
-                <Image
-                  src={patient.avatar_url}
-                  alt={patient.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              <Avatar
+                src={patient.avatar_url}
+                name={patient.name}
+                className="w-16 h-16 shrink-0 border border-[#E7EEFF]"
+                textClassName="text-lg"
+              />
             </div>
 
             <hr className="border-[#E7EEFF] mb-6" />
