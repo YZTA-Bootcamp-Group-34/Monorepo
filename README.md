@@ -39,8 +39,9 @@ BOOTCAMP-34
 
 # **🌐 Canlı Demo (Production)**
 
-| Servis | URL | Açıklama |
+| Servis / Materyal | URL | Açıklama |
 |---|---|---|
+| 🎬 Uygulama Tanıtım Videosu | [YouTube'da İzle (PreClinic)](https://www.youtube.com/watch?v=nNC-Fhe0jNU) | Uçtan uca uygulamanın çalışma mantığı ve tanıtım videosu |
 | 🩺 Hekim Paneli (Next.js) | https://preclinic-panel.vercel.app | Hekim girişi, hasta listesi, SOAP raporları, randevular, ayarlar |
 | ⚙️ Backend API (FastAPI) | https://preclinic-api.vercel.app | REST API — interaktif dokümantasyon: `/docs` |
 | 📱 Mobil Uygulama (Expo) | [Expo EAS Build Sayfası](https://expo.dev/accounts/ulascan54/projects/preclinic-carepulse/builds/49367e4d-e564-4ca6-a0b9-4c2608835f78) \| [Direkt APK İndir](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) | Live Android APK ve Expo Derleme Sayfası (Aşağıdaki Kurulum bölümüne bakınız) |
@@ -749,7 +750,17 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
   *  **Toplantı ve İletişim Düzeni:** Backend entegrasyonu, API bağlantıları, test süreçleri, YouTube tanıtım videosu ve kapanış sunumu gibi projenin tüm son adımlarını kusursuz koordine etmek adına toplantılar periyodik olarak gerçekleştirilmiştir. Bu sıkı iletişim düzeni sayesinde tüm süreçler anlık olarak senkronize edilmiş ve projenin her detayı başarıyla bitirilmiştir.
 
 
-**Youtube videosu linki:**.
+# 🎬 Uygulama Tanıtım Videosu
+
+PreClinic projesinin tüm çalışma mantığını, mobil hasta uygulamasını, CarePulse AI triyaj & SOAP üretimi akışını ve hekim yönetim panelini içeren YouTube tanıtım videosunu aşağıdaki bağlantıdan veya görsele tıklayarak izleyebilirsiniz:
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=nNC-Fhe0jNU">
+    <img src="https://img.youtube.com/vi/nNC-Fhe0jNU/maxresdefault.jpg" width="85%" alt="PreClinic Uygulama Tanıtım Videosu" />
+  </a>
+</p>
+
+🔗 **YouTube Video Linki:** [https://www.youtube.com/watch?v=nNC-Fhe0jNU](https://www.youtube.com/watch?v=nNC-Fhe0jNU)
 
 
 
