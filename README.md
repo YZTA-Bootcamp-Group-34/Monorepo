@@ -34,6 +34,24 @@ BOOTCAMP-34
 <p>Proaktif Taburcu Sonrası Takip: Muayene sonrasında hastayı otonom takibe alarak periyodik semptom sorgulaması yapar ve anomali durumunda hekimi uyarır.</p> 
 
 
+# **🌐 Canlı Demo (Production)**
+
+| Servis | URL | Açıklama |
+|---|---|---|
+| 🩺 Hekim Paneli (Next.js) | https://preclinic-panel.vercel.app | Hekim girişi, hasta listesi, SOAP raporları, randevular, ayarlar |
+| ⚙️ Backend API (FastAPI) | https://preclinic-api.vercel.app | REST API — interaktif dokümantasyon: `/docs` |
+| 📱 Mobil Uygulama (Expo) | EAS Build ile APK | Aşağıdaki "APK Üretimi" bölümüne bakınız |
+
+**Demo Hesaplar (seed verisi):**
+
+| Rol | Kullanıcı Adı | Şifre |
+|---|---|---|
+| Hekim | `dr.alper@preclinic.com` | `123456` |
+| Hekim | `dr.yusuf@preclinic.com` | `123456` |
+| Hasta (TC No) | `12345678901` | `123456` |
+
+> **Not:** Vercel serverless ortamında SQLite `/tmp` üzerinde çalıştığı için veritabanı **geçicidir (ephemeral)**: her soğuk başlangıçta tohumlanmış demo verisine döner. Kalıcı üretim verisi için `DATABASE_URL` ortam değişkeni ile harici bir veritabanına geçilebilir.
+
 # **🤖 Hedef Kitlemiz**
 <p>Hastaneler ve Sağlık Kuruluşları: Randevu sıkışıklığını çözmek ve günlük hasta bakma kapasitesini artırmak isteyen kurumlar.</p> 
 <p>Doktorlar: Muayene sırasında veri girişiyle vakit kaybetmek istemeyen ve hastanın geçmiş bağlamına hızla erişmek isteyen sağlık profesyonelleri.</p> <p>Hastalar: Doğru polikliniği seçmekte zorlanan, muayene odasında stres sebebiyle şikayetlerini eksik anlatan tüm bireyler.</p> 
@@ -110,19 +128,52 @@ PreClinic, tek bir repository içinde 3 ana bağımsız modülden oluşan bir Mo
 
 ```
 Monorepo/
+├── api/                   # Vercel Serverless Giriş Noktası (backend'i sarmalar)
+│   └── index.py
+├── vercel.json            # Backend Vercel yönlendirme/fonksiyon konfigürasyonu
+├── requirements.txt       # Vercel Python runtime bağımlılıkları
+│
 ├── backend/               # Python FastAPI + SQLAlchemy ORM + SQLite
-│   ├── database.py        # SQLite Bağlantı Konfigürasyonu
-│   ├── models.py          # Veritabanı Tablo Yapıları (SQLAlchemy)
-│   ├── main.py            # API Uç Noktaları ve Chatbot Yönlendirme Mantığı
-│   └── seed.py            # Figma Ekran Görüntüleriyle Eşleşen Tohumlama Verisi
+│   ├── database.py        # SQLite Bağlantısı (Vercel'de /tmp, lokalde kök dizin)
+│   ├── models.py          # Veritabanı Tabloları (+ chat_messages diyalog hafızası)
+│   ├── main.py            # API Uç Noktaları, JWT Auth, Pipeline Entegrasyonu
+│   ├── seed.py            # Figma Ekran Görüntüleriyle Eşleşen Tohumlama Verisi
+│   └── ai/                # 🧠 CarePulse LangChain AI Katmanı
+│       ├── llm.py         #   Gemini model fabrikası (model fallback listesiyle)
+│       ├── schemas.py     #   Pydantic yapılandırılmış çıktılar (TriageDecision, SOAPReport)
+│       ├── chains.py      #   LCEL zincirleri: triyaj + SOAP (prompt | llm | parser)
+│       ├── memory.py      #   SQLite tabanlı kalıcı diyalog hafızası
+│       ├── tools.py       #   Canlı DB bağlamı: poliklinik kataloğu, hasta özgeçmişi
+│       ├── similarity.py  #   Kosinüs benzerliği tıbbi hafıza motoru
+│       ├── pipeline.py    #   Orkestrasyon: hafıza→bağlam→triyaj→SOAP→sevk kaydı
+│       └── fallback.py    #   API anahtarı yokken kural tabanlı çevrimdışı diyalog
 │
 ├── doctor-panel/          # Next.js 16 + React 19 + Tailwind CSS v4 + shadcn/ui
+│   ├── src/lib/api.ts     # Ortak API istemcisi (NEXT_PUBLIC_API_URL + Bearer)
+│   ├── src/proxy.ts       # Sunucu taraflı auth guard (Next 16 middleware/proxy)
 │   ├── src/components/    # Sidebar ve Dashboard Arayüz Bileşenleri
-│   └── src/app/           # Hasta Yönetimi Paneli & Hasta SOAP Detay Sayfası
+│   └── src/app/
+│       ├── (dashboard)/   # Sidebar'lı korumalı alan
+│       │   ├── page.tsx           # Ana Panel (istatistikler + aktif hastalar)
+│       │   ├── patients/          # Hasta Listesi (arama + kritiklik) & SOAP Detay
+│       │   ├── appointments/      # Randevu Geçmişi
+│       │   └── settings/          # Hekim Profili + Çıkış
+│       ├── login/ register/ onboarding/   # Sidebar'sız auth sayfaları
+│       └── layout.tsx
 │
-└── mobile-app/            # Expo Router (React Native) + React Native Paper + Vector Icons
-    ├── src/app/           # Chatbot, Bölümler, Geçmiş ve Profil Sekme Ekranları
-    └── src/components/    # Figma Tasarımına Birebir Uygun Nane Yeşili Kapsül TabBar
+└── mobile-app/            # Expo SDK 57 (expo-router) + React Native Paper
+    ├── src/lib/api.ts     # Ortak API istemcisi (EXPO_PUBLIC_API_URL + Bearer)
+    ├── src/context/auth.tsx  # AuthContext: token, profil, anlık çıkış
+    ├── eas.json           # EAS Build profilleri (APK üretimi)
+    └── src/app/
+        ├── index.tsx      # CarePulse AI Sohbet (Chatbot sekmesi)
+        ├── departments.tsx# Bölümler + hekim/saat seçimi
+        ├── history.tsx    # Randevu Geçmişi (canlı API verisi)
+        ├── profile.tsx    # Profil + Taburcu Sonrası Takip Anketi
+        ├── personal-info.tsx  # Alt Sayfa: Kişisel Bilgiler (biyometri düzenleme)
+        ├── health-file.tsx    # Alt Sayfa: Sağlık Dosyam (VKİ, kronik, sevk durumu)
+        ├── settings.tsx       # Alt Sayfa: Ayarlar + Çıkış
+        └── help.tsx           # Alt Sayfa: Yardım / SSS
 ```
 
 ## 🚀 Kurulum ve Çalıştırma Adımları
@@ -144,6 +195,11 @@ python3.11 -m backend.seed
 python3.11 -m uvicorn backend.main:app --reload --port 8000
 ```
 *API interaktif dokümantasyonuna http://localhost:8000/docs adresinden ulaşabilirsiniz.*
+
+> **Gemini API Anahtarı (opsiyonel ama önerilir):** `backend/.env` dosyasına `GEMINI_API_KEY=...` ekleyin.
+> Anahtar tanımlıysa LangChain tabanlı CarePulse pipeline'ı (canlı triyaj + SOAP üretimi) çalışır;
+> tanımlı değilse sistem otomatik olarak kural tabanlı çevrimdışı demo diyaloğuna düşer.
+> Model `GEMINI_MODEL` değişkeniyle değiştirilebilir (varsayılan: `gemini-2.5-flash`).
 
 ### 2. Next.js Hekim Paneli Arayüzünü Çalıştırma
 Yeni bir terminal sekmesinde:
@@ -168,6 +224,136 @@ npm run web
 
 ---
 
+# 🔌 REST API Referansı
+
+| Metot | Uç Nokta | Auth | Açıklama |
+|---|---|---|---|
+| POST | `/api/auth/register` | - | Hasta/hekim kaydı → JWT token |
+| POST | `/api/auth/login` | - | Giriş → JWT token |
+| GET | `/api/auth/me` | Bearer veya `?token=` | Oturum sahibinin profili |
+| POST | `/api/auth/onboarding` | Bearer veya `?token=` | Profil/biyometri güncelleme |
+| POST | `/api/chat` | Opsiyonel Bearer | CarePulse AI sohbeti (kimlikliyse sevk hastaya işlenir) |
+| GET | `/api/patients` | Bearer | Hasta listesi (hekim paneli) |
+| GET | `/api/patients/{id}` | Bearer | Hasta detayı + SOAP + benzerlik uyarıları |
+| PUT | `/api/patients/{id}/action` | Bearer | Sevk/randevu onayı (hekim) |
+| POST | `/api/patients/{id}/followup` | Bearer | Taburcu sonrası takip anketi + anomali kontrolü |
+| GET | `/api/departments` | - | Poliklinik kataloğu |
+| GET/POST | `/api/appointments/history` | Bearer | Randevu geçmişi listeleme/oluşturma |
+
+---
+
+# 🧠 CarePulse AI Mimarisi (LangChain)
+
+CarePulse asistanı, tek prompt'lu basit bir chatbot değil; **LangChain (LCEL)** üzerine kurulmuş,
+her hasta mesajını çok aşamalı bir klinik karar hattından geçiren bir **triyaj pipeline'ıdır**
+(`backend/ai/`):
+
+```mermaid
+flowchart TD
+    MSG[Hasta Mesajı] --> MEM[1. Kalıcı Hafıza<br/>SQLite chat_messages tablosundan<br/>session diyalog geçmişi yüklenir]
+    MEM --> CTX[2. Canlı Bağlam Enjeksiyonu<br/>Poliklinik kataloğu + doluluk durumu<br/>Hasta biyometrisi ve tıbbi özgeçmişi]
+    CTX --> TRIAGE[3. Triyaj Zinciri LCEL<br/>prompt | Gemini | PydanticOutputParser<br/>→ TriageDecision yapılandırılmış karar]
+    TRIAGE -->|department = null| ASK[Netleştirici soru + hızlı yanıt butonları]
+    TRIAGE -->|sevk kararı netleşti| SOAP[4. SOAP Zinciri<br/>Diyalog dökümünden S-O-A-P raporu<br/>+ ICD-10 kodları üretilir]
+    SOAP --> PERSIST[5. Sevk Kaydı<br/>Semptomlar, olasılıklar, tetkikler ve<br/>SOAP raporu hasta dosyasına yazılır]
+    PERSIST --> PANEL[🩺 Hekim Paneline Anlık Düşer]
+    TRIAGE -.->|LLM hatası / anahtar yok| FB[Kural Tabanlı Fallback<br/>Çevrimdışı demo diyaloğu]
+```
+
+**Mimarinin temel özellikleri:**
+
+1. **Yapılandırılmış Çıktı (Structured Output):** Zincirler serbest metin değil, Pydantic şemalarına
+   (`TriageDecision`, `SOAPReport`) doğrulanmış JSON üretir. Bu sayede aciliyet (`ACİL`/`RUTİN KONTROL`/`TAKİP`),
+   kritiklik skoru (0.0-1.0), olasılık yüzdeleri ve ICD-10 kodları tip güvenli şekilde veritabanına işlenir.
+2. **Kalıcı Diyalog Hafızası:** Sohbet geçmişi in-memory sözlük yerine `chat_messages` tablosunda tutulur;
+   serverless (Vercel) ortamda bile bağlam kaybolmaz, "yeniden başlat" komutu hafızayı sıfırlar.
+3. **Canlı Araç Katmanı (Tools):** LLM'e statik liste yerine veritabanındaki gerçek poliklinik kataloğu ve
+   kimliği doğrulanmış hastanın kronik hastalıkları/özgeçmişi bağlam olarak enjekte edilir — kronik kalp
+   hastası bir hastanın göğüs ağrısı otomatik olarak daha yüksek kritiklikle değerlendirilir.
+4. **Kimlikli Sevk:** Mobil uygulamadan Bearer token ile gelen sohbetlerde sevk kaydı doğrudan **o hastanın**
+   dosyasına işlenir (anonim modda demo amaçlı sanal hasta oluşturulur).
+5. **Model Yedekleme (Fallback Chain):** Birincil Gemini modeli başarısız olursa sırasıyla yedek modeller
+   denenir; tüm modeller erişilemezse kural tabanlı çevrimdışı diyalog motoru devreye girer — uygulama
+   internet/anahtar olmadan da uçtan uca çalışır.
+6. **Uzun Süreli Medikal Hafıza:** `similarity.py` içindeki kosinüs benzerliği + tıbbi eşanlamlı genişletme
+   motoru, güncel semptomlarla geçmiş tanılar arasında bağlamsal ilişki kurup hekim paneline
+   `KRİTİK UYARI` bayrakları üretir.
+
+**Sohbet API sözleşmesi** (`POST /api/chat`):
+
+```jsonc
+// İstek
+{ "message": "Göğsümde baskı var, sol kolum uyuşuyor", "session_id": "patient-4" }
+// Yanıt
+{
+  "sender": "bot",
+  "text": "…",                       // Hastaya gösterilecek diyalog yanıtı
+  "options": ["…", "…"],             // Tek dokunuşluk hızlı yanıt butonları
+  "department": "Kardiyoloji Polikliniği",  // Sevk kararı (netleşmediyse null)
+  "urgency": "ACİL",
+  "referral_created": true           // Hekim paneline sevk kaydı düştü mü?
+}
+```
+
+---
+
+# 🚀 Dağıtım (Deployment) Kılavuzu
+
+## Vercel — Backend (FastAPI)
+
+Backend, monorepo kökündeki `api/index.py` + `vercel.json` üzerinden **Vercel Python runtime** ile yayınlanır:
+
+```bash
+# Monorepo kökünde
+npx vercel link --yes --project preclinic-api
+npx vercel deploy --prod --yes
+
+# Canlı AI için Gemini anahtarını tanımlayın (opsiyonel):
+npx vercel env add GEMINI_API_KEY production
+```
+
+- Tüm istekler `vercel.json` rewrite kuralıyla `api/index.py` içindeki FastAPI `app` nesnesine yönlenir.
+- SQLite, salt-okunur serverless dosya sisteminde çalışabilmek için soğuk başlangıçta `/tmp`'ye kopyalanır
+  (`backend/database.py`). Bu nedenle **prod verisi geçicidir**; kalıcılık gerekirse `DATABASE_URL` ile
+  harici veritabanı bağlanır.
+- `.vercelignore`, frontend klasörlerini ve medya dosyalarını backend dağıtımının dışında tutar.
+
+## Vercel — Hekim Paneli (Next.js)
+
+```bash
+cd doctor-panel
+npx vercel link --yes --project preclinic-panel
+npx vercel env add NEXT_PUBLIC_API_URL production   # → https://preclinic-api.vercel.app
+npx vercel deploy --prod --yes
+```
+
+## APK Üretimi — Mobil Uygulama (EAS Build)
+
+`mobile-app/eas.json` ve `app.json` (paket adı: `com.bootcamp34.preclinic`) APK üretimi için hazırdır.
+Expo hesabıyla giriş yaptıktan sonra tek komutla bulutta APK derlenir:
+
+```bash
+cd mobile-app
+npx eas-cli login                      # Expo hesabı ile giriş
+npx eas-cli build -p android --profile preview   # → indirilebilir .apk linki üretir
+```
+
+- `preview` profili `EXPO_PUBLIC_API_URL=https://preclinic-api.vercel.app` ortam değişkenini gömer;
+  APK kutudan çıktığı gibi canlı backend'e bağlanır.
+- Yerel derleme tercih edilirse (Android SDK kuruluysa): `npx expo run:android --variant release`.
+
+## Ortam Değişkenleri Özeti
+
+| Değişken | Uygulama | Açıklama |
+|---|---|---|
+| `GEMINI_API_KEY` | backend | LangChain CarePulse pipeline'ını aktive eder (yoksa fallback mod) |
+| `GEMINI_MODEL` | backend | Gemini model adı (varsayılan `gemini-2.5-flash`) |
+| `DATABASE_URL` | backend | Opsiyonel harici veritabanı (varsayılan: SQLite) |
+| `NEXT_PUBLIC_API_URL` | doctor-panel | Backend API adresi (varsayılan `http://localhost:8000`) |
+| `EXPO_PUBLIC_API_URL` | mobile-app | Backend API adresi (varsayılan `http://localhost:8000`) |
+
+---
+
 # 📊 Sistem Modelleme ve Diyagramlar
 
 PreClinic projesinin veri akışı, veritabanı modelleri ve kullanım senaryoları aşağıda Mermaid şemalarıyla modellenmiştir.
@@ -178,10 +364,37 @@ SQLite veritabanı üzerinde tanımlı tablolar ve aralarındaki bire-çok (`1-t
 
 ```mermaid
 erDiagram
+    USERS ||--o| PATIENTS : "patient rolü"
+    USERS ||--o| DOCTOR_PROFILES : "doctor rolü"
     PATIENTS ||--o{ MEDICAL_HISTORY_ITEMS : "has"
     PATIENTS ||--o{ AI_SYMPTOM_FINDINGS : "displays"
     PATIENTS ||--o{ AI_PROBABILITIES : "indicates"
     PATIENTS ||--o| AI_ACTIONS : "suggests"
+
+    USERS {
+        int id PK
+        string username
+        string hashed_password
+        string role
+    }
+
+    DOCTOR_PROFILES {
+        int id PK
+        int user_id FK
+        string name
+        string diploma_no
+        string branch
+        string bio
+        string avatar_url
+    }
+
+    CHAT_MESSAGES {
+        int id PK
+        string session_id
+        string role
+        string content
+        string created_at
+    }
 
     PATIENTS {
         int id PK
