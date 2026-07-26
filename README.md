@@ -722,15 +722,13 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 İletişim Kanalları: Günlük senkronizasyon toplantıları Meet üzerinden sesli olarak gerçekleştirilmiş, gün içi anlık geri bildirimler ve ekran görüntüsü paylaşımları için WhatsApp kanalı aktif olarak kullanılmıştır.
 
 
- * **Toplantı Kayıtları:** Daily Scrum ekran görüntüleri ve chat geçmişleri klasörüne ulaşmak için: [Tıklayınız](https://github.com/YZTA-Bootcamp-Group-34/Monorepo/tree/bd220a4526524863325b123c6d58756c51f42af8/toplant%C4%B1%20kay%C4%B1tlar%C4%B1son).
+ * **Toplantı Kayıtları:** Daily Scrum ekran görüntüleri ve chat geçmişleri klasörüne ulaşmak için: [Tıklayınız](https://github.com/YZTA-Bootcamp-Group-34/Monorepo/tree/ce6d14c510084cc986eddaf724667a105b527411/toplant%C4%B1%20kay%C4%B1tlar%C4%B1son).
 
 
  * **Sprint board update:** Sprint board screenshot: Proje yönetim sürecimizi ve görev dağılımlarımızı takip ettiğimiz Trello panomuza ulaşmak için: [Tıklayınız](https://trello.com/b/1D4BDI4I/grup34)*
  
       <img width="800" height="800" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/0fc7a6fdbf4a74814afe7d0e192e08daaa2f4049/trello3.png">
 
-
-# **Ürün Durumu (Görseller)**
 
 
 
