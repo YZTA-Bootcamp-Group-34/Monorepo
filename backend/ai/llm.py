@@ -4,8 +4,9 @@ import os
 from functools import lru_cache
 
 # Gemini model adı ortam değişkeniyle değiştirilebilir.
-DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"]
+# "latest" alias'ları Google tarafında güncel tutulur; sabit sürüm adları zamanla kapatılabiliyor.
+DEFAULT_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+FALLBACK_MODELS = ["gemini-flash-lite-latest", "gemini-2.5-flash"]
 
 
 def is_llm_active() -> bool:

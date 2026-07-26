@@ -66,8 +66,8 @@
   - [x] Backend Vercel'de: `preclinic-api` projesi → https://preclinic-api.vercel.app (`api/index.py` + `vercel.json`; SQLite soğuk başlangıçta `/tmp`'ye kopyalanır — ephemeral demo).
   - [x] Hekim paneli Vercel'de: `preclinic-panel` projesi → https://preclinic-panel.vercel.app (`NEXT_PUBLIC_API_URL` prod env); canlı ortamda hekim girişi doğrulandı.
   - [x] README'ye canlı demo URL'leri, REST API tablosu, AI mimari diyagramı, deployment kılavuzu ve genişletilmiş ERD eklendi.
-  - [ ] APK üretimi: `eas.json` hazır; `npx eas-cli login && npx eas-cli build -p android --profile preview` komutu kullanıcının Expo hesabı girişini bekliyor.
-  - [ ] Vercel'de `GEMINI_API_KEY` tanımlanması (şu an prod sohbet fallback modda).
+  - [x] APK üretimi: EAS projesi `@ulascan54/preclinic-carepulse` oluşturuldu, Android keystore üretildi, preview profili (APK) ile cloud build başlatıldı.
+  - [x] Vercel'de `GEMINI_API_KEY` tanımlandı; varsayılan model `gemini-flash-latest`'e güncellendi ve canlı Gemini triyajı prod'da doğrulandı.
 
 ### 🟢 FAZ 8: Alt Sayfa Backend Entegrasyon Tamamlama (Tamamlandı — 26 Temmuz 2026)
 *Hedef: Denetimde tespit edilen tüm ölü/placeholder kontrollerin gerçek backend uçlarına bağlanması.*
@@ -76,3 +76,5 @@
 - [x] Hasta profiline `avatar_url` ve `notifications_enabled` alanları (`/api/auth/me` + `/api/auth/onboarding` üzerinden okunur/yazılır).
 - [x] **Mobil:** bölüm kartlarındaki hekim/saat listesi canlı API'den; randevu `book` ucuna geçirildi; ölü ataç butonu kaldırıldı; ses modu dürüst "demo dikte" akışına dönüştürüldü (gerçek `/api/chat`'e gönderir); geçmiş kartları akordeon detay açar; avatar seçici modal (onboarding ucuna kaydeder); bildirim anahtarı backend'e persist; hata yakalamalarında sahte "başarılı" mesajları düzeltildi.
 - [x] **Panel:** `NotificationsBell` bileşeni `/api/notifications`'a bağlı (nokta yalnızca bildirim varken); `/patients/new` gerçek hasta kayıt formu; tarih rozeti "AY GG" dışı formatlarda kırılmıyor; sidebar avatar + TIBBİ ID `/api/auth/me`'den; catch bloklarındaki yanlış success toast'ları düzeltildi.
+- [x] **Supabase Geçişi:** Canlı backend Supabase Postgres'e bağlandı (`DATABASE_URL` Vercel prod env, Transaction Pooler `aws-0-ap-northeast-1:6543`); seed Supabase'e uygulandı, sequence senkronizasyonu eklendi, kalıcılık canlıda register→DB doğrulamasıyla kanıtlandı. Direct connection IPv6-only olduğu için pooler zorunlu.
+- [x] **Uçtan Uca Canlı Test:** Mobil web'de hasta girişi → AI sohbet → canlı hekim/saat listesi → randevu (`REC #` sunucudan) → Geçmiş akordeon → Kişisel Bilgiler kaydetme; panelde aynı randevunun "TEM 26" rozetiyle görünümü ve bildirim zili doğrulandı.

@@ -31,7 +31,10 @@ BOOTCAMP-34
 <p>Doğal Dille Akıllı Sevk & MHRS Yönetimi: Hastanın "sol kolum sızlıyor" gibi kendi cümlelerini analiz ederek en doğru polikliniği belirler ve otomatik randevuya yönlendirir.</p> 
 <p>SOAP Formatında Hekim Ön Bilgilendirme Paneli: Toplanan dağınık verileri tıbbi terminolojiye çevirerek hekimin ekranına standart bir Klinik Ön Anamnez Raporu olarak düşürür. </p> 
 <p>Uzun Süreli Medikal Hafıza : Hastanın geçmiş şikayetleri ile güncel semptomları arasında "Cosine Similarity" kullanarak bağlamsal ilişkiler kurar ve hekime kritik uyarılar üretir.</p> 
-<p>Proaktif Taburcu Sonrası Takip: Muayene sonrasında hastayı otonom takibe alarak periyodik semptom sorgulaması yapar ve anomali durumunda hekimi uyarır.</p> 
+<p>Proaktif Taburcu Sonrası Takip: Muayene sonrasında hastayı otonom takibe alarak periyodik semptom sorgulaması yapar ve anomali durumunda hekimi uyarır.</p>
+<p>Canlı Poliklinik Kadrosu & Randevu: Bölüm kartlarında hekim kadrosu ve müsait saatler canlı API'den gelir; randevu kaydının tarihi ve REC kodu sunucu tarafında üretilerek panel-mobil veri tutarlılığı garanti edilir.</p>
+<p>Canlı Hekim Bildirimleri: Panel zili, ACİL / KRİTİK TAKİP / sevk onayı durumlarından anlık türetilen bildirimleri listeler ve ilgili hasta dosyasına tek tıkla götürür.</p>
+<p>Kişiselleştirilebilir Hasta Profili: Avatar seçimi ve bildirim tercihi dahil tüm profil alanları API üzerinden kalıcı olarak saklanır; hekim panelinden manuel yeni hasta kaydı da açılabilir.</p> 
 
 
 # **🌐 Canlı Demo (Production)**
@@ -40,7 +43,7 @@ BOOTCAMP-34
 |---|---|---|
 | 🩺 Hekim Paneli (Next.js) | https://preclinic-panel.vercel.app | Hekim girişi, hasta listesi, SOAP raporları, randevular, ayarlar |
 | ⚙️ Backend API (FastAPI) | https://preclinic-api.vercel.app | REST API — interaktif dokümantasyon: `/docs` |
-| 📱 Mobil Uygulama (Expo) | EAS Build ile APK | Aşağıdaki "APK Üretimi" bölümüne bakınız |
+| 📱 Mobil Uygulama (Expo) | [Expo EAS Build Sayfası](https://expo.dev/accounts/ulascan54/projects/preclinic-carepulse/builds/49367e4d-e564-4ca6-a0b9-4c2608835f78) \| [Direkt APK İndir](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) | Live Android APK ve Expo Derleme Sayfası (Aşağıdaki Kurulum bölümüne bakınız) |
 
 **Demo Hesaplar (seed verisi):**
 
@@ -50,7 +53,9 @@ BOOTCAMP-34
 | Hekim | `dr.yusuf@preclinic.com` | `123456` |
 | Hasta (TC No) | `12345678901` | `123456` |
 
-> **Not:** Vercel serverless ortamında SQLite `/tmp` üzerinde çalıştığı için veritabanı **geçicidir (ephemeral)**: her soğuk başlangıçta tohumlanmış demo verisine döner. Kalıcı üretim verisi için `DATABASE_URL` ortam değişkeni ile harici bir veritabanına geçilebilir.
+> **Not:** Canlı ortam **Supabase (Postgres)** üzerinde çalışır — veriler kalıcıdır. `DATABASE_URL` tanımlı
+> olmadığında backend otomatik olarak SQLite'a düşer (lokalde kök dizindeki `preclinic.db`, Vercel'de `/tmp`
+> üzerinde ephemeral demo modu). Ayrıntılar için "Kalıcı Veritabanı — Supabase" bölümüne bakınız.
 
 # **🤖 Hedef Kitlemiz**
 <p>Hastaneler ve Sağlık Kuruluşları: Randevu sıkışıklığını çözmek ve günlük hasta bakma kapasitesini artırmak isteyen kurumlar.</p> 
@@ -196,10 +201,11 @@ python3.11 -m uvicorn backend.main:app --reload --port 8000
 ```
 *API interaktif dokümantasyonuna http://localhost:8000/docs adresinden ulaşabilirsiniz.*
 
-> **Gemini API Anahtarı (opsiyonel ama önerilir):** `backend/.env` dosyasına `GEMINI_API_KEY=...` ekleyin.
+> **Gemini API Anahtarı:** `backend/.env` dosyasına `GEMINI_API_KEY=...` ekleyin (canlı ortamda tanımlıdır ✅).
 > Anahtar tanımlıysa LangChain tabanlı CarePulse pipeline'ı (canlı triyaj + SOAP üretimi) çalışır;
 > tanımlı değilse sistem otomatik olarak kural tabanlı çevrimdışı demo diyaloğuna düşer.
-> Model `GEMINI_MODEL` değişkeniyle değiştirilebilir (varsayılan: `gemini-2.5-flash`).
+> Model `GEMINI_MODEL` değişkeniyle değiştirilebilir (varsayılan: `gemini-flash-latest` — Google'ın
+> güncel tuttuğu alias; sabit sürüm adları zamanla kapatılabildiği için "latest" tercih edilmiştir).
 
 ### 2. Next.js Hekim Paneli Arayüzünü Çalıştırma
 Yeni bir terminal sekmesinde:
@@ -331,10 +337,62 @@ npx vercel env add NEXT_PUBLIC_API_URL production   # → https://preclinic-api.
 npx vercel deploy --prod --yes
 ```
 
-## APK Üretimi — Mobil Uygulama (EAS Build)
+## Kalıcı Veritabanı — Supabase / Postgres (Canlıda Aktif ✅)
+
+Canlı ortam (`preclinic-api` Vercel projesi) **Supabase Postgres**'e bağlıdır; `DATABASE_URL`
+production ortam değişkeni olarak tanımlıdır ve veriler soğuk başlangıçlarda kaybolmaz.
+Backend, `DATABASE_URL` üzerinden herhangi bir Postgres'e bağlanabilir — kod değişikliği gerekmez
+(`backend/database.py` önceliği: `DATABASE_URL` → Vercel `/tmp` SQLite → lokal SQLite):
+
+```bash
+# 1. supabase.com'da proje oluşturun; Settings → Database → "Connection string" (Transaction pooler, port 6543) kopyalayın.
+# 2. Tabloları oluşturup demo veriyi tohumlayın (lokalden bir kez):
+DATABASE_URL="postgresql://postgres.<ref>:<şifre>@aws-0-<bölge>.pooler.supabase.com:6543/postgres" python3.11 -m backend.seed
+
+# 3. Vercel'e tanımlayın ve yeniden yayınlayın:
+npx vercel env add DATABASE_URL production   # (preclinic-api projesinde)
+npx vercel deploy --prod --yes
+```
+
+- `postgres://` şeması otomatik olarak `postgresql://`'e çevrilir; `psycopg2-binary` bağımlılığı hazırdır.
+- `seed.py`, Postgres'te explicit id'lerden sonra sequence'ları otomatik senkronize eder (id çakışması yaşanmaz).
+- **Önemli:** Supabase'in *direct connection* adresi (`db.<ref>.supabase.co:5432`) yalnızca IPv6'dır ve birçok
+  ortamdan (Vercel dahil) erişilemez; mutlaka **Transaction Pooler** adresini kullanın:
+  `postgresql://postgres.<ref>:<şifre>@aws-0-<bölge>.pooler.supabase.com:6543/postgres`.
+- Engine, serverless için `pool_pre_ping` ile yapılandırılmıştır; sohbet hafızası (`chat_messages`) dahil tüm
+  veriler artık kalıcıdır.
+
+## 📱 Mobil Uygulama (APK) İndirme, Kurulum ve Derleme (EAS Build)
+
+PreClinic CarePulse Mobil Uygulaması Android APK olarak derlenmiştir ve test cihazlarına doğrudan yüklenebilir.
+
+### 📥 APK İndirme & Expo Build Linkleri
+
+| Bağlantı Türü | Link / Erişim | Açıklama |
+|---|---|---|
+| 📦 **Direkt APK İndir** | [`application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk`](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) | Repodaki doğrudan indirilebilir APK dosyası (~104 MB) |
+| 🌐 **Expo EAS Build** | [Expo Build #49367e4d-e564-4ca6-a0b9-4c2608835f78](https://expo.dev/accounts/ulascan54/projects/preclinic-carepulse/builds/49367e4d-e564-4ca6-a0b9-4c2608835f78) | Expo hesabı üzerindeki derleme detayları ve doğrudan indirme sayfası |
+
+### 📲 Cihaza Yükleme ve QR Kod ile Kurulum
+
+Android mobil cihazınıza uygulamayı kolayca yüklemek için aşağıdaki QR kodunu taratabilir veya doğrudan APK indirme bağlantısını kullanabilirsiniz:
+
+<p align="center">
+  <img src="APK/EXPOinstall/Screenshot%202026-07-26%20at%2015.37.30.png" width="380" alt="Expo Build QR Code Kurulum Ekranı" />
+</p>
+<p align="center">
+  <em>Expo EAS Build Kurulum Ekranı ve Test Cihazı QR Kodu</em>
+</p>
+
+**Adım Adım Kurulum Talimatları:**
+1. **QR Kod İle:** Android cihazınızın kamerasını açarak yukarıdaki QR kodunu taratın ve çıkan bildirimdeki Expo indirme bağlantısını açın.
+2. **Doğrudan APK İle:** [`application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk`](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) linkinden APK dosyasını indirin ve cihazınızda çalıştırın (istenirse "Bilinmeyen kaynaklardan uygulama yükleme" iznini onaylayın).
+3. **Canlı Sunucu Entegrasyonu:** Derleme `EXPO_PUBLIC_API_URL=https://preclinic-api.vercel.app` ortam değişkeni ile gömülü üretilmiştir; doğrudan canlı Supabase ve Vercel backend servislerimize bağlanır.
+
+### 🛠️ Yeniden APK Derleme (EAS Build)
 
 `mobile-app/eas.json` ve `app.json` (paket adı: `com.bootcamp34.preclinic`) APK üretimi için hazırdır.
-Expo hesabıyla giriş yaptıktan sonra tek komutla bulutta APK derlenir:
+Expo hesabıyla giriş yaptıktan sonra tek komutla bulutta yeni bir APK derleyebilirsiniz:
 
 ```bash
 cd mobile-app
@@ -342,16 +400,15 @@ npx eas-cli login                      # Expo hesabı ile giriş
 npx eas-cli build -p android --profile preview   # → indirilebilir .apk linki üretir
 ```
 
-- `preview` profili `EXPO_PUBLIC_API_URL=https://preclinic-api.vercel.app` ortam değişkenini gömer;
-  APK kutudan çıktığı gibi canlı backend'e bağlanır.
+- `preview` profili `EXPO_PUBLIC_API_URL=https://preclinic-api.vercel.app` ortam değişkenini gömer; APK kutudan çıktığı gibi canlı backend'e bağlanır.
 - Yerel derleme tercih edilirse (Android SDK kuruluysa): `npx expo run:android --variant release`.
 
 ## Ortam Değişkenleri Özeti
 
 | Değişken | Uygulama | Açıklama |
 |---|---|---|
-| `GEMINI_API_KEY` | backend | LangChain CarePulse pipeline'ını aktive eder (yoksa fallback mod) |
-| `GEMINI_MODEL` | backend | Gemini model adı (varsayılan `gemini-2.5-flash`) |
+| `GEMINI_API_KEY` | backend | LangChain CarePulse pipeline'ını aktive eder (yoksa fallback mod) — canlıda tanımlı ✅ |
+| `GEMINI_MODEL` | backend | Gemini model adı (varsayılan `gemini-flash-latest`) |
 | `DATABASE_URL` | backend | Opsiyonel harici veritabanı (varsayılan: SQLite) |
 | `NEXT_PUBLIC_API_URL` | doctor-panel | Backend API adresi (varsayılan `http://localhost:8000`) |
 | `EXPO_PUBLIC_API_URL` | mobile-app | Backend API adresi (varsayılan `http://localhost:8000`) |

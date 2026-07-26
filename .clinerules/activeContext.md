@@ -19,9 +19,25 @@ FAZ 1-8 tamamlandı. Sistem uçtan uca çalışır, tüm alt sayfalar backend'e 
 - Tüm ölü/placeholder UI kontrolleri gerçek uçlara bağlandı; catch bloklarındaki sahte success mesajları düzeltildi.
 - README: canlı URL'ler, API tablosu, AI mimari diyagramı, deployment kılavuzu.
 
+## Supabase (26 Temmuz 2026 — Aktif)
+- Canlı backend artık **Supabase Postgres** kullanıyor: Vercel `preclinic-api` projesinde `DATABASE_URL`
+  production env'i tanımlı (Transaction Pooler, `aws-0-ap-northeast-1.pooler.supabase.com:6543`,
+  kullanıcı `postgres.sktffqvoprswgeyzlzqd`). Veriler kalıcı; ephemeral SQLite sınırlaması kalktı.
+- Dikkat: Supabase *direct connection* (`db.<ref>.supabase.co:5432`) IPv6-only olduğu için çalışmaz;
+  her zaman pooler adresi kullanılmalı. Şema değişikliğinde `DATABASE_URL=... python3.11 -m backend.seed`.
+
+## Gemini Canlı AI (26 Temmuz 2026 — Aktif)
+- `GEMINI_API_KEY` hem `backend/.env` (gitignored) hem Vercel `preclinic-api` production env'inde tanımlı.
+- Varsayılan model `gemini-flash-latest` (llm.py) — sabit sürümler (gemini-2.5-flash/1.5-flash) bu anahtar
+  için kapalı/erişilemez olduğundan "latest" alias'ları kullanılıyor; yedekler: gemini-flash-lite-latest.
+- Canlıda doğrulandı: gerçek Gemini triyajı ACİL/RUTİN aciliyet, poliklinik sevki ve ICD-10'lu SOAP raporu üretiyor.
+
+## APK (EAS Build)
+- Expo hesabı: ulascan54 (vidge) — proje `@ulascan54/preclinic-carepulse` (ID a8ac8ca4-aff0-4c06-b0a5-04943ae225e5).
+- Build sayfası: https://expo.dev/accounts/ulascan54/projects/preclinic-carepulse/builds
+- Yeni APK üretimi: `cd mobile-app && npx eas-cli build -p android --profile preview`.
+
 ## Bekleyen Kullanıcı Aksiyonları
-- `npx eas-cli login && npx eas-cli build -p android --profile preview` → APK üretimi (Expo hesabı gerekli).
-- Vercel `preclinic-api` projesine `GEMINI_API_KEY` eklenmesi (canlı AI için); şu an prod fallback modda.
 - Yerel commit'lerin GitHub'a push'lanması.
 
 ## Verification
