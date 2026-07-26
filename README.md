@@ -461,8 +461,8 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 
 * **Sprint Review:**
 
-  -Projenin son aşaması olan bu sprintte, API entegrasyonu ve backend bağlantıları dahil olmak üzere uygulamanın **her şeyi tamamen bitirilmiştir**. Geliştirilen tüm modüller ve Doktor Paneli canlı senaryolarla uçtan uca **test edilmiş ve eksiksiz bir şekilde çalıştığı onaylanmıştır**. Projenin kapanışı için gerekli olan **sunum dosyası hazırlanmış** ve uygulamanın tüm çalışma mantığını gösteren **YouTube videosu hazır hale getirilmiştir**. PreClinic projesi hedeflenen tüm çıktılarıyla başarıyla tamamlanmıştır..
-
+  -Projenin son aşaması olan bu sprintte, API entegrasyonu ve backend bağlantıları dahil olmak üzere uygulamanın **her şeyi tamamen bitirilmiştir**. Geliştirilen tüm modüller ve Doktor Paneli canlı senaryolarla uçtan uca **test edilmiş ve eksiksiz bir şekilde çalıştığı onaylanmıştır**. Projenin kapanışı için gerekli olan **sunum dosyası hazırlanmış** ve uygulamanın tüm çalışma mantığını gösteren **YouTube videosu hazır hale getirilmiştir**. PreClinic projesi hedeflenen tüm çıktılarıyla başarıyla tamamlanmıştır.
+  
   -Sprint Review katılımcıları: Esra Canpolat,Ulaş Can Demirbağ,Alper Duman,Abdulaziz Nalça.
 
 
