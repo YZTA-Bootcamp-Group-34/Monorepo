@@ -6,6 +6,7 @@ python-dotenv
 pyjwt
 bcrypt
 passlib[bcrypt]
+psycopg2-binary  # Supabase/Postgres desteği (DATABASE_URL ile)
 # --- CarePulse AI (LangChain) katmanı ---
 langchain-core>=0.3.0
 langchain-google-genai>=2.0.0

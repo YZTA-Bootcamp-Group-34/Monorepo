@@ -230,6 +230,19 @@ def seed_db():
         db.add_all([h1, h2])
 
         db.commit()
+
+        # Postgres (Supabase): explicit id ile eklenen kayıtlar sequence'ları
+        # ilerletmez; sonraki otomatik id'lerin çakışmaması için senkronize et.
+        if engine.dialect.name == "postgresql":
+            from sqlalchemy import text
+            for table in Base.metadata.sorted_tables:
+                if "id" in table.columns:
+                    db.execute(text(
+                        f"SELECT setval(pg_get_serial_sequence('{table.name}', 'id'), "
+                        f"COALESCE((SELECT MAX(id) FROM {table.name}), 1))"
+                    ))
+            db.commit()
+
         print("Database successfully seeded with Figma design logs!")
     except Exception as e:
         db.rollback()
