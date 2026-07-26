@@ -748,6 +748,56 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 
 
 
+# **🌐 Canlı Demo (Production)**
+
+| Servis / Materyal | URL | Açıklama |
+|---|---|---|
+| 🎬 Uygulama Tanıtım Videosu | [YouTube'da İzle (PreClinic)](https://www.youtube.com/watch?v=nNC-Fhe0jNU) | Uçtan uca uygulamanın çalışma mantığı ve tanıtım videosu |
+| 🩺 Hekim Paneli (Next.js) | https://preclinic-panel.vercel.app | Hekim girişi, hasta listesi, SOAP raporları, randevular, ayarlar |
+| ⚙️ Backend API (FastAPI) | https://preclinic-api.vercel.app | REST API — interaktif dokümantasyon: `/docs` |
+| 📱 Mobil Uygulama (Expo) | [Expo EAS Build Sayfası](https://expo.dev/accounts/ulascan54/projects/preclinic-carepulse/builds/49367e4d-e564-4ca6-a0b9-4c2608835f78) \| [Direkt APK İndir](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) | Live Android APK ve Expo Derleme Sayfası |
+
+**Demo Hesaplar (seed verisi):**
+
+| Rol | Kullanıcı Adı | Şifre |
+|---|---|---|
+| Hekim | `dr.alper@preclinic.com` | `123456` |
+| Hekim | `dr.yusuf@preclinic.com` | `123456` |
+| Hasta (TC No) | `12345678901` | `123456` |
+
+> **Not:** Canlı ortam **Supabase (Postgres)** üzerinde çalışır — veriler kalıcıdır.
+
+---
+
+# 📱 Mobil Uygulama (APK) İndirme & QR Kod Kurulumu
+
+PreClinic CarePulse Mobil Uygulaması Android APK olarak derlenmiştir ve test cihazlarına doğrudan yüklenebilir.
+
+### 📥 APK İndirme & Expo Build Linkleri
+
+| Bağlantı Türü | Link / Erişim | Açıklama |
+|---|---|---|
+| 📦 **Direkt APK İndir** | [`application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk`](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) | Repodaki doğrudan indirilebilir APK dosyası (~104 MB) |
+| 🌐 **Expo EAS Build** | [Expo Build #49367e4d-e564-4ca6-a0b9-4c2608835f78](https://expo.dev/accounts/ulascan54/projects/preclinic-carepulse/builds/49367e4d-e564-4ca6-a0b9-4c2608835f78) | Expo hesabı üzerindeki derleme detayları ve doğrudan indirme sayfası |
+
+### 📲 Cihaza Yükleme ve QR Kod ile Kurulum
+
+Android mobil cihazınıza uygulamayı kolayca yüklemek için aşağıdaki QR kodunu taratabilir veya doğrudan APK indirme bağlantısını kullanabilirsiniz:
+
+<p align="center">
+  <img src="APK/EXPOinstall/Screenshot%202026-07-26%20at%2015.37.30.png" width="380" alt="Expo Build QR Code Kurulum Ekranı" />
+</p>
+<p align="center">
+  <em>Expo EAS Build Kurulum Ekranı ve Test Cihazı QR Kodu</em>
+</p>
+
+**Adım Adım Kurulum Talimatları:**
+1. **QR Kod İle:** Android cihazınızın kamerasını açarak yukarıdaki QR kodunu taratın ve çıkan bildirimdeki Expo indirme bağlantısını açın.
+2. **Doğrudan APK İle:** [`application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk`](APK/application-49367e4d-e564-4ca6-a0b9-4c2608835f78.apk) linkinden APK dosyasını indirin ve cihazınızda çalıştırın (istenirse "Bilinmeyen kaynaklardan uygulama yükleme" iznini onaylayın).
+3. **Canlı Sunucu Entegrasyonu:** Derleme `EXPO_PUBLIC_API_URL=https://preclinic-api.vercel.app` ortam değişkeni ile gömülü üretilmiştir; doğrudan canlı Supabase ve Vercel backend servislerimize bağlanır.
+
+---
+
 # 🎬 Uygulama Tanıtım Videosu
 
 PreClinic projesinin tüm çalışma mantığını, mobil hasta uygulamasını, CarePulse AI triyaj & SOAP üretimi akışını ve hekim yönetim panelini içeren YouTube tanıtım videosunu aşağıdaki bağlantıdan veya görsele tıklayarak izleyebilirsiniz:
@@ -760,9 +810,11 @@ PreClinic projesinin tüm çalışma mantığını, mobil hasta uygulamasını, 
 
 🔗 **YouTube Video Linki:** [https://www.youtube.com/watch?v=nNC-Fhe0jNU](https://www.youtube.com/watch?v=nNC-Fhe0jNU)
 
+---
 
+# 📊 Sunum PDF Dosyası
 
-🔗 **Sunum Pdf Linki:**[Tıklayınız](https://canva.link/ubfgghe56g99s10)
+🔗 **Sunum Pdf Linki:** [Tıklayınız](https://canva.link/ubfgghe56g99s10)
 
 
 
