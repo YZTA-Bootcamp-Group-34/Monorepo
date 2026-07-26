@@ -11,7 +11,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { apiFetch } from "@/lib/api";
 
 interface Department {
   id: number;
@@ -65,13 +66,8 @@ export default function DepartmentsScreen() {
         dateString = timeStr;
       }
 
-      const token = await AsyncStorage.getItem("user_token") || "";
-      const res = await fetch("http://localhost:8000/api/appointments/history", {
+      const res = await apiFetch("/api/appointments/history", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
         body: JSON.stringify({
           date_str: dateString,
           title: `${deptName} Randevusu`,
@@ -154,7 +150,7 @@ export default function DepartmentsScreen() {
   useEffect(() => {
     const fetchDepts = async () => {
       try {
-        const res = await fetch("http://localhost:8000/api/departments");
+        const res = await apiFetch("/api/departments");
         if (res.ok) {
           const data = await res.json();
           setDepartments(data);

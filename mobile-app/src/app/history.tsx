@@ -1,14 +1,17 @@
-import React, { useState } from "react";
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  ScrollView, 
-  TouchableOpacity 
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+
+import { apiFetch } from "@/lib/api";
 
 interface HistoryRecord {
   id: string;
@@ -24,61 +27,156 @@ interface GroupedRecords {
   records: HistoryRecord[];
 }
 
+interface ApiAppointment {
+  id: number | string;
+  date_str: string;
+  title: string;
+  detail: string;
+  rec_code: string;
+  doctor_name: string;
+  status: string;
+}
+
+// Offline / mock fallback (previous static content).
+const MOCK_RECORDS: GroupedRecords[] = [
+  {
+    year: "2025 Kayıtları",
+    records: [
+      {
+        id: "1",
+        title: "Şiddetli Baş Ağrısı",
+        date: "12 Mayıs 2025",
+        department: "Nöroloji Önerildi",
+        urgency: "normal",
+        iconName: "medical"
+      },
+      {
+        id: "2",
+        title: "Göğüs Sıkışması",
+        date: "28 Nisan 2025",
+        department: "Kardiyoloji (Acil)",
+        urgency: "urgent",
+        iconName: "heart-half"
+      },
+      {
+        id: "3",
+        title: "Kuru Öksürük",
+        date: "05 Mart 2025",
+        department: "Göğüs Hastalıkları Önerildi",
+        urgency: "normal",
+        iconName: "pulse"
+      }
+    ]
+  },
+  {
+    year: "2024 Kayıtları",
+    records: [
+      {
+        id: "4",
+        title: "Diş Eti Kanaması",
+        date: "14 Kasım 2024",
+        department: "Diş Hekimliği",
+        urgency: "past",
+        iconName: "heart"
+      },
+      {
+        id: "5",
+        title: "Ciltte Kızarıklık",
+        date: "22 Ağustos 2024",
+        department: "Dermatoloji",
+        urgency: "past",
+        iconName: "flask"
+      }
+    ]
+  }
+];
+
+function mapUrgency(status: string): "urgent" | "normal" | "past" {
+  const s = (status || "").toLowerCase();
+  if (s.includes("acil") || s.includes("kritik")) return "urgent";
+  if (s.includes("aktif") || s.includes("onay") || s.includes("bekle")) return "normal";
+  return "past";
+}
+
+function mapIcon(title: string): string {
+  const t = (title || "").toLowerCase();
+  if (t.includes("kardiyoloji") || t.includes("göğüs")) return "heart-half";
+  if (t.includes("nöroloji") || t.includes("baş")) return "medical";
+  if (t.includes("dermatoloji") || t.includes("cilt")) return "flask";
+  return "pulse";
+}
+
+function groupAppointments(items: ApiAppointment[]): GroupedRecords[] {
+  const groups: Record<string, HistoryRecord[]> = {};
+  const order: string[] = [];
+
+  items.forEach((item) => {
+    const yearMatch = (item.date_str || "").match(/(20\d{2})/);
+    const groupKey = yearMatch ? `${yearMatch[1]} Kayıtları` : "Güncel Kayıtlar";
+
+    const record: HistoryRecord = {
+      id: String(item.id),
+      title: item.title || "Randevu Kaydı",
+      date: item.date_str || "",
+      department: [item.doctor_name, item.status].filter(Boolean).join(" • ") || item.detail || "",
+      urgency: mapUrgency(item.status),
+      iconName: mapIcon(item.title)
+    };
+
+    if (!groups[groupKey]) {
+      groups[groupKey] = [];
+      order.push(groupKey);
+    }
+    groups[groupKey].push(record);
+  });
+
+  // "Güncel Kayıtlar" (no year) first, then years descending.
+  order.sort((a, b) => {
+    if (a === "Güncel Kayıtlar") return -1;
+    if (b === "Güncel Kayıtlar") return 1;
+    return b.localeCompare(a);
+  });
+
+  return order.map((year) => ({ year, records: groups[year] }));
+}
+
 export default function HistoryScreen() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [recordsData, setRecordsData] = useState<GroupedRecords[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const recordsData: GroupedRecords[] = [
-    {
-      year: "2025 Kayıtları",
-      records: [
-        {
-          id: "1",
-          title: "Şiddetli Baş Ağrısı",
-          date: "12 Mayıs 2025",
-          department: "Nöroloji Önerildi",
-          urgency: "normal",
-          iconName: "medical"
-        },
-        {
-          id: "2",
-          title: "Göğüs Sıkışması",
-          date: "28 Nisan 2025",
-          department: "Kardiyoloji (Acil)",
-          urgency: "urgent",
-          iconName: "heart-half"
-        },
-        {
-          id: "3",
-          title: "Kuru Öksürük",
-          date: "05 Mart 2025",
-          department: "Göğüs Hastalıkları Önerildi",
-          urgency: "normal",
-          iconName: "pulse"
+  const fetchHistory = useCallback(async () => {
+    try {
+      const res = await apiFetch("/api/appointments/history");
+      if (res.ok) {
+        const data: ApiAppointment[] = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setRecordsData(groupAppointments(data));
+        } else {
+          setRecordsData(MOCK_RECORDS);
         }
-      ]
-    },
-    {
-      year: "2024 Kayıtları",
-      records: [
-        {
-          id: "4",
-          title: "Diş Eti Kanaması",
-          date: "14 Kasım 2024",
-          department: "Diş Hekimliği",
-          urgency: "past",
-          iconName: "heart"
-        },
-        {
-          id: "5",
-          title: "Ciltte Kızarıklık",
-          date: "22 Ağustos 2024",
-          department: "Dermatoloji",
-          urgency: "past",
-          iconName: "flask"
-        }
-      ]
+      } else {
+        setRecordsData(MOCK_RECORDS);
+      }
+    } catch (err) {
+      // Offline fallback
+      setRecordsData(MOCK_RECORDS);
     }
-  ];
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      await fetchHistory();
+      setLoading(false);
+    })();
+  }, [fetchHistory]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchHistory();
+    setRefreshing(false);
+  }, [fetchHistory]);
 
   // Filtering records by search input
   const filteredData = recordsData.map((group) => {
@@ -131,58 +229,81 @@ export default function HistoryScreen() {
         />
       </View>
 
-      {/* Scrollable list of records */}
-      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent}>
-        {filteredData.map((group) => (
-          <View key={group.year} style={styles.groupSection}>
-            <View style={styles.groupHeader}>
-              <Text style={styles.groupTitle}>{group.year}</Text>
-              <Text style={styles.groupCount}>{group.records.length} Kayıt</Text>
+      {loading ? (
+        /* Loading skeleton */
+        <View style={styles.scrollContent}>
+          <View style={styles.skeletonGroupHeader} />
+          {[0, 1, 2].map((i) => (
+            <View key={i} style={styles.skeletonCard}>
+              <View style={styles.skeletonIcon} />
+              <View style={{ flex: 1, gap: 8 }}>
+                <View style={[styles.skeletonLine, { width: "60%" }]} />
+                <View style={[styles.skeletonLine, { width: "40%" }]} />
+                <View style={[styles.skeletonLine, { width: "50%" }]} />
+              </View>
             </View>
+          ))}
+        </View>
+      ) : (
+        /* Scrollable list of records */
+        <ScrollView
+          style={styles.scrollArea}
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#003C90" colors={["#003C90"]} />
+          }
+        >
+          {filteredData.map((group) => (
+            <View key={group.year} style={styles.groupSection}>
+              <View style={styles.groupHeader}>
+                <Text style={styles.groupTitle}>{group.year}</Text>
+                <Text style={styles.groupCount}>{group.records.length} Kayıt</Text>
+              </View>
 
-            {group.records.map((rec) => (
-              <TouchableOpacity key={rec.id} style={styles.recordCard}>
-                <View style={styles.cardLeft}>
-                  {/* Icon wrapper */}
-                  <View style={styles.iconWrapper}>
-                    <Ionicons 
-                      name={
-                        rec.iconName === "medical" ? "bandage-outline" :
-                        rec.iconName === "heart-half" ? "heart-dislike-outline" :
-                        rec.iconName === "pulse" ? "fitness-outline" :
-                        rec.iconName === "heart" ? "happy-outline" : "color-palette-outline"
-                      } 
-                      size={20} 
-                      color="#003C90" 
-                    />
-                  </View>
-                  <View style={styles.textWrapper}>
-                    <Text style={styles.recordTitle}>{rec.title}</Text>
-                    <Text style={styles.recordDate}>{rec.date}</Text>
-                    <View style={styles.urgencyRow}>
-                      <Ionicons 
-                        name={getUrgencyIcon(rec.urgency)} 
-                        size={14} 
-                        color={getUrgencyColor(rec.urgency)} 
+              {group.records.map((rec) => (
+                <TouchableOpacity key={rec.id} style={styles.recordCard}>
+                  <View style={styles.cardLeft}>
+                    {/* Icon wrapper */}
+                    <View style={styles.iconWrapper}>
+                      <Ionicons
+                        name={
+                          rec.iconName === "medical" ? "bandage-outline" :
+                          rec.iconName === "heart-half" ? "heart-dislike-outline" :
+                          rec.iconName === "pulse" ? "fitness-outline" :
+                          rec.iconName === "heart" ? "happy-outline" : "color-palette-outline"
+                        }
+                        size={20}
+                        color="#003C90"
                       />
-                      <Text style={[styles.urgencyText, { color: getUrgencyColor(rec.urgency) }]}>
-                        {rec.department}
-                      </Text>
+                    </View>
+                    <View style={styles.textWrapper}>
+                      <Text style={styles.recordTitle}>{rec.title}</Text>
+                      <Text style={styles.recordDate}>{rec.date}</Text>
+                      <View style={styles.urgencyRow}>
+                        <Ionicons
+                          name={getUrgencyIcon(rec.urgency)}
+                          size={14}
+                          color={getUrgencyColor(rec.urgency)}
+                        />
+                        <Text style={[styles.urgencyText, { color: getUrgencyColor(rec.urgency) }]}>
+                          {rec.department}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#C3C6D5" />
-              </TouchableOpacity>
-            ))}
-          </View>
-        ))}
+                  <Ionicons name="chevron-forward" size={18} color="#C3C6D5" />
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
 
-        {filteredData.length === 0 && (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Aradığınız kriterlere uygun kayıt bulunamadı.</Text>
-          </View>
-        )}
-      </ScrollView>
+          {filteredData.length === 0 && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Aradığınız kriterlere uygun kayıt bulunamadı.</Text>
+            </View>
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -317,5 +438,34 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#737784",
     textAlign: "center",
+  },
+  skeletonGroupHeader: {
+    width: 110,
+    height: 22,
+    borderRadius: 6,
+    backgroundColor: "#E7EEFF",
+    marginBottom: 12,
+  },
+  skeletonCard: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#E7EEFF",
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 8,
+  },
+  skeletonIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: "#F0F4FA",
+  },
+  skeletonLine: {
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#F0F0F5",
   },
 });

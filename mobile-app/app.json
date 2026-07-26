@@ -1,16 +1,18 @@
 {
   "expo": {
-    "name": "mobile-app",
-    "slug": "mobile-app",
+    "name": "PreClinic CarePulse",
+    "slug": "preclinic-carepulse",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobileapp",
+    "scheme": "preclinic",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.bootcamp34.preclinic",
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.bootcamp34.preclinic",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

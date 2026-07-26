@@ -1,3 +1,4 @@
+# Vercel Python runtime bu dosyayı kök dizinden okur (backend/requirements.txt ile eş tutulmalı)
 fastapi>=0.100.0
 uvicorn>=0.22.0
 sqlalchemy>=2.0.0
@@ -6,6 +7,5 @@ python-dotenv
 pyjwt
 bcrypt
 passlib[bcrypt]
-# --- CarePulse AI (LangChain) katmanı ---
 langchain-core>=0.3.0
 langchain-google-genai>=2.0.0

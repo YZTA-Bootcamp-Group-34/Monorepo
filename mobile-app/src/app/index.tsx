@@ -12,7 +12,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/context/auth";
 
 interface Message {
   id: string;
@@ -22,6 +24,7 @@ interface Message {
 }
 
 export default function ChatbotScreen() {
+  const { profile } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -44,12 +47,10 @@ export default function ChatbotScreen() {
   const [notification, setNotification] = useState<ReferralNotification | null>(null);
 
   useEffect(() => {
+    const patientId = profile?.id ?? 1;
     const checkReferrals = async () => {
       try {
-        const token = await AsyncStorage.getItem("user_token") || "";
-        const res = await fetch("http://localhost:8000/api/patients/1", {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
+        const res = await apiFetch(`/api/patients/${patientId}`);
         if (res.ok) {
           const data = await res.json();
           if (data.referral_status === "CONFIRMED") {
@@ -69,9 +70,11 @@ export default function ChatbotScreen() {
     checkReferrals();
     const interval = setInterval(checkReferrals, 6000);
     return () => clearInterval(interval);
-  }, []);
+  }, [profile?.id]);
 
-  const backendUrl = "http://localhost:8000/api/chat";
+  // Stable chat session id: real patient id when authenticated, random guest id otherwise.
+  const guestSessionRef = useRef(`guest-${Math.random().toString(36).slice(2, 10)}`);
+  const sessionId = profile ? `patient-${profile.id}` : guestSessionRef.current;
 
   const handleSendMessage = async (textToSend: string) => {
     if (!textToSend.trim()) return;
@@ -89,10 +92,9 @@ export default function ChatbotScreen() {
     setLoading(true);
 
     try {
-      const response = await fetch(backendUrl, {
+      const response = await apiFetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: textToSend })
+        body: JSON.stringify({ message: textToSend, session_id: sessionId })
       });
 
       if (response.ok) {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, Mail, ArrowRight, Stethoscope, AlertCircle } from "lucide-react";
+import { apiFetch, setSession } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,9 +14,14 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Redirect if already logged in
-    if (typeof window !== "undefined" && localStorage.getItem("token")) {
-      router.push("/");
+    // Redirect if already logged in (re-set the cookie so old
+    // localStorage-only sessions pass the server-side guard)
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        document.cookie = `token=${token}; path=/; max-age=604800; samesite=lax`;
+        router.push("/");
+      }
     }
   }, [router]);
 
@@ -30,7 +36,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8000/api/auth/login", {
+      const res = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: email, password }),
@@ -38,10 +44,8 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("doctor_name", data.name);
-        
+        setSession(data.token, data.role, data.name);
+
         // Redirect to dashboard
         router.push("/");
       } else {

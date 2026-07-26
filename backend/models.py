@@ -96,6 +96,16 @@ class AIAction(Base):
 
     patient = relationship("Patient", back_populates="action")
 
+class ChatMessageLog(Base):
+    """LangChain pipeline'ının kalıcı diyalog hafızası (session bazlı)."""
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, index=True)
+    role = Column(String)  # "user" | "assistant"
+    content = Column(String)
+    created_at = Column(String, nullable=True)
+
 class User(Base):
     __tablename__ = "users"
 

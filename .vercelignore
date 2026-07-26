@@ -1,0 +1,15 @@
+# Backend Vercel projesi yalnızca api/ + backend/ + preclinic.db + requirements.txt yükler
+doctor-panel
+mobile-app
+screenshots-app-design
+real-product-ss
+SOHBET RESİMLERİ
+sprint2buluşmalar
+toplantı kayıtlarıson
+*.png
+*.jpeg
+*.jpg
+.clinerules
+__pycache__
+backend/__pycache__
+.DS_Store

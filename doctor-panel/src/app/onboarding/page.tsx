@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Stethoscope, Award, ClipboardList, CheckCircle2, AlertCircle } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function OnboardingPage() {
 
     try {
       const token = localStorage.getItem("token") || "";
-      const res = await fetch("http://localhost:8000/api/auth/onboarding?token=" + token, {
+      const res = await apiFetch("/api/auth/onboarding?token=" + encodeURIComponent(token), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

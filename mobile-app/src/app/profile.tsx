@@ -10,17 +10,21 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+
+import { apiFetch } from "@/lib/api";
+import { useAuth } from "@/context/auth";
 
 export default function ProfileScreen() {
+  const router = useRouter();
+  const { profile, signOut } = useAuth();
   const [painLevel, setPainLevel] = useState(5);
   const [fever, setFever] = useState("36.5");
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("user_token");
-      await AsyncStorage.removeItem("user_onboarding_complete");
-      alert("Çıkış yapıldı. Giriş ekranına dönmek için lütfen uygulamayı kapatıp açın.");
+      // Context reset makes the login overlay in _layout.tsx appear immediately.
+      await signOut();
     } catch (err) {
       alert("Çıkış yapılırken hata oluştu.");
     }
@@ -33,13 +37,9 @@ export default function ProfileScreen() {
     setSubmitting(true);
     try {
       const parsedFever = parseFloat(fever) || 36.5;
-      const token = await AsyncStorage.getItem("user_token") || "";
-      const res = await fetch("http://localhost:8000/api/patients/1/followup", {
+      const patientId = profile?.id ?? 1;
+      const res = await apiFetch(`/api/patients/${patientId}/followup`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
         body: JSON.stringify({
           pain_level: painLevel,
           fever: parsedFever,
@@ -66,20 +66,21 @@ export default function ProfileScreen() {
     }
   };
 
+  // Real profile from /api/auth/me when available; demo values as offline/mock fallback.
   const user = {
-    name: "Esra Canpolat",
-    tc_no: "12345678901",
-    blood: "0 Rh+",
-    weight: "47 kg",
-    height: "172 cm",
+    name: profile?.name || "Esra Canpolat",
+    tc_no: profile?.tc_no || "12345678901",
+    blood: profile?.blood_type || "0 Rh+",
+    weight: profile?.weight ? `${profile.weight} kg` : "47 kg",
+    height: profile?.height ? `${profile.height} cm` : "172 cm",
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150"
   };
 
   const menuItems = [
-    { id: "personal", label: "Kişisel Bilgiler", icon: "person-outline" },
-    { id: "files", label: "Sağlık Dosyam", icon: "folder-open-outline" },
-    { id: "settings", label: "Ayarlar", icon: "settings-outline" },
-    { id: "help", label: "Yardım", icon: "help-circle-outline" }
+    { id: "personal", label: "Kişisel Bilgiler", icon: "person-outline", route: "/personal-info" as const },
+    { id: "files", label: "Sağlık Dosyam", icon: "folder-open-outline", route: "/health-file" as const },
+    { id: "settings", label: "Ayarlar", icon: "settings-outline", route: "/settings" as const },
+    { id: "help", label: "Yardım", icon: "help-circle-outline", route: "/help" as const }
   ];
 
   return (
@@ -195,7 +196,7 @@ export default function ProfileScreen() {
         {/* Settings Menu List */}
         <View style={styles.menuContainer}>
           {menuItems.map((item) => (
-            <TouchableOpacity key={item.id} style={styles.menuItem}>
+            <TouchableOpacity key={item.id} style={styles.menuItem} onPress={() => router.push(item.route)}>
               <View style={styles.menuItemLeft}>
                 <View style={styles.menuIconWrapper}>
                   <Ionicons name={item.icon as any} size={18} color="#003C90" />

@@ -16,6 +16,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import Image from "next/image";
+import { apiFetch } from "@/lib/api";
 
 interface MedicalHistoryItem {
   category: string;
@@ -68,14 +69,13 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
   const [patient, setPatient] = useState<PatientDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const handleConfirmAction = async () => {
     setSubmitting(true);
     try {
-      const token = localStorage.getItem("token") || "";
-      const res = await fetch(`http://localhost:8000/api/patients/${patientId}/action`, {
-        method: "PUT",
-        headers: { "Authorization": `Bearer ${token}` }
+      const res = await apiFetch(`/api/patients/${patientId}/action`, {
+        method: "PUT"
       });
       if (res.ok) {
         toast.success("Randevu ve Sevk İşlemi Başarıyla Onaylandı!");
@@ -187,10 +187,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
 
     const fetchPatientDetails = async () => {
       try {
-        const token = localStorage.getItem("token") || "";
-        const res = await fetch(`http://localhost:8000/api/patients/${patientId}`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
+        const res = await apiFetch(`/api/patients/${patientId}`);
         if (res.ok) {
           const data = await res.json();
           setPatient(data);
@@ -234,10 +231,20 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
           </Link>
           <h1 className="text-2xl font-bold text-navy-dark">Hasta Özeti</h1>
         </div>
-        <button className="relative p-2 rounded-full hover:bg-slate-100 transition">
-          <Bell className="w-5 h-5 text-navy-dark" />
-          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-royal-blue border-2 border-white rounded-full"></span>
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications((v) => !v)}
+            className="relative p-2 rounded-full hover:bg-slate-100 transition"
+          >
+            <Bell className="w-5 h-5 text-navy-dark" />
+            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-royal-blue border-2 border-white rounded-full"></span>
+          </button>
+          {showNotifications && (
+            <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#E7EEFF] rounded-xl shadow-sm p-4 z-20">
+              <span className="text-xs text-slate-dark">Yeni bildirim yok</span>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Dynamic AI Warnings (Uzun Süreli Medikal Hafıza Alerts) */}
@@ -322,7 +329,12 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
               <Activity className="w-5 h-5 text-royal-blue" />
               <h2 className="font-bold text-navy-dark text-base">Tıbbi Geçmiş Özeti</h2>
             </div>
-            <button className="text-xs font-semibold text-royal-blue hover:underline">Tam Kayıt</button>
+            <button
+              onClick={() => document.getElementById("ai-semptom-analizi")?.scrollIntoView({ behavior: "smooth" })}
+              className="text-xs font-semibold text-royal-blue hover:underline"
+            >
+              Tam Kayıt
+            </button>
           </div>
 
           <div className="flex flex-col gap-3 flex-1 justify-center">
@@ -350,7 +362,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
       {/* Bottom row layout (AI Symptom Analysis + Recommended Actions) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Left Bottom: AI Symptom Analysis */}
-        <div className="lg:col-span-3 bg-[#003C90] text-white rounded-2xl p-6 shadow-xs flex flex-col gap-6 relative overflow-hidden">
+        <div id="ai-semptom-analizi" className="lg:col-span-3 bg-[#003C90] text-white rounded-2xl p-6 shadow-xs flex flex-col gap-6 relative overflow-hidden">
           {/* Subtle design graphics */}
           <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-48 h-48 bg-white/5 rounded-full pointer-events-none" />
           

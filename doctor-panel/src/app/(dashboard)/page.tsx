@@ -3,20 +3,20 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  Search, 
-  Bell, 
-  Plus, 
-  ChevronDown, 
-  Users as UsersIcon, 
-  AlertCircle, 
-  Calendar, 
-  Smile, 
-  ChevronRight,
+import {
+  Search,
+  Bell,
+  Plus,
+  ChevronDown,
+  Users as UsersIcon,
+  AlertCircle,
+  Calendar,
+  Smile,
   TrendingUp,
   Sparkles
 } from "lucide-react";
 import Image from "next/image";
+import { apiFetch } from "@/lib/api";
 
 // Pydantic matching schemas
 interface Patient {
@@ -48,6 +48,8 @@ export default function Dashboard() {
   const [activeFilter, setActiveFilter] = useState("Tümü");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [sortBy, setSortBy] = useState<"Son Randevu" | "Kritiklik">("Son Randevu");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -120,7 +122,7 @@ export default function Dashboard() {
         const token = localStorage.getItem("token") || "";
         const headers = { "Authorization": `Bearer ${token}` };
 
-        const patientsRes = await fetch("http://localhost:8000/api/patients", { headers });
+        const patientsRes = await apiFetch("/api/patients", { headers });
         if (patientsRes.ok) {
           const patientsData = await patientsRes.json();
           // Sort Ulaş Can first to match Figma screenshot 7 list
@@ -134,7 +136,7 @@ export default function Dashboard() {
           setPatients(mockPatients);
         }
 
-        const apptsRes = await fetch("http://localhost:8000/api/appointments/history", { headers });
+        const apptsRes = await apiFetch("/api/appointments/history", { headers });
         if (apptsRes.ok) {
           const apptsData = await apptsRes.json();
           setAppointments(apptsData);
@@ -183,23 +185,18 @@ export default function Dashboard() {
   };
 
   // Filter logic
-  const filteredPatients = patients.filter((patient) => {
-    const matchesSearch = patient.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          patient.tc_no.includes(searchQuery);
-    
-    if (activeFilter === "Tümü") return matchesSearch;
-    if (activeFilter === "Acil" && patient.status === "ACİL") return matchesSearch;
-    if (activeFilter === "Rutin Kontrol" && patient.status === "RUTİN KONTROL") return matchesSearch;
-    if (activeFilter === "Takip" && patient.status === "TAKİP") return matchesSearch;
-    return false;
-  });
+  const filteredPatients = patients
+    .filter((patient) => {
+      const matchesSearch = patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            patient.tc_no.includes(searchQuery);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("doctor_name");
-    router.push("/login");
-  };
+      if (activeFilter === "Tümü") return matchesSearch;
+      if (activeFilter === "Acil" && patient.status === "ACİL") return matchesSearch;
+      if (activeFilter === "Rutin Kontrol" && patient.status === "RUTİN KONTROL") return matchesSearch;
+      if (activeFilter === "Takip" && patient.status === "TAKİP") return matchesSearch;
+      return false;
+    })
+    .sort((a, b) => (sortBy === "Kritiklik" ? b.criticality - a.criticality : 0));
 
   return (
     <div className="p-8 flex flex-col gap-8 w-full max-w-7xl mx-auto">
@@ -224,20 +221,33 @@ export default function Dashboard() {
             />
           </div>
           {/* Notification icon */}
-          <button className="relative p-2 rounded-full hover:bg-slate-100 transition">
-            <Bell className="w-5 h-5 text-navy-dark" />
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-royal-blue border-2 border-white rounded-full"></span>
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications((v) => !v)}
+              className="relative p-2 rounded-full hover:bg-slate-100 transition"
+            >
+              <Bell className="w-5 h-5 text-navy-dark" />
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-royal-blue border-2 border-white rounded-full"></span>
+            </button>
+            {showNotifications && (
+              <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-[#E7EEFF] rounded-xl shadow-sm p-4 z-20">
+                <span className="text-xs text-slate-dark">Yeni bildirim yok</span>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
       {/* Metrics Header Section */}
       <section className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
         <div className="flex flex-wrap items-center gap-3">
-          <button className="bg-royal-blue text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm hover:bg-opacity-95 transition">
+          <Link
+            href="/patients"
+            className="bg-royal-blue text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm hover:bg-opacity-95 transition"
+          >
             <Plus className="w-4 h-4" />
             <span>Yeni Kayıt</span>
-          </button>
+          </Link>
 
           {/* Filters */}
           <div className="flex items-center bg-white p-1 rounded-lg border border-[#E7EEFF] gap-1">
@@ -264,10 +274,13 @@ export default function Dashboard() {
         </div>
 
         {/* Sort */}
-        <div className="flex items-center gap-2 text-sm text-slate-dark bg-white border border-[#E7EEFF] px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition">
-          <span>Sırala: <strong className="text-navy-dark">Son Randevu</strong></span>
+        <button
+          onClick={() => setSortBy((s) => (s === "Son Randevu" ? "Kritiklik" : "Son Randevu"))}
+          className="flex items-center gap-2 text-sm text-slate-dark bg-white border border-[#E7EEFF] px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 transition"
+        >
+          <span>Sırala: <strong className="text-navy-dark">{sortBy}</strong></span>
           <ChevronDown className="w-4 h-4" />
-        </div>
+        </button>
       </section>
 
       {/* Key Metric Cards */}
@@ -341,7 +354,7 @@ export default function Dashboard() {
       <section className="bg-white rounded-2xl border border-[#E7EEFF] overflow-hidden shadow-xs">
         <div className="p-6 border-b border-[#E7EEFF] flex justify-between items-center">
           <h2 className="font-bold text-[#111C2C] text-base">Aktif Hastalar</h2>
-          <button className="text-xs font-semibold text-royal-blue hover:underline">Hepsini Gör &gt;</button>
+          <Link href="/patients" className="text-xs font-semibold text-royal-blue hover:underline">Hepsini Gör &gt;</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -447,9 +460,9 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E7EEFF] p-6 shadow-xs flex flex-col justify-between">
           <div className="flex justify-between items-center mb-6">
             <h2 className="font-bold text-[#111C2C] text-base">Randevu Geçmişi</h2>
-            <button className="text-slate-dark hover:text-[#111C2C] transition">
+            <Link href="/appointments" className="text-slate-dark hover:text-[#111C2C] transition">
               <ChevronDown className="w-5 h-5" />
-            </button>
+            </Link>
           </div>
 
           <div className="flex flex-col gap-4">
@@ -512,9 +525,12 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <button className="w-full bg-white text-[#003C90] py-3 rounded-xl text-xs font-bold shadow-sm hover:bg-opacity-90 active:scale-[0.99] transition mt-4">
+          <Link
+            href="/appointments"
+            className="w-full bg-white text-[#003C90] py-3 rounded-xl text-xs font-bold shadow-sm hover:bg-opacity-90 active:scale-[0.99] transition mt-4 text-center block"
+          >
             Raporları İncele
-          </button>
+          </Link>
         </div>
       </section>
     </div>

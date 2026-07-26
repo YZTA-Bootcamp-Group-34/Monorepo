@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, ActivityIndicator, Image } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { apiFetch, MOCK_TOKEN } from "@/lib/api";
+import { AuthProvider, useAuth } from "@/context/auth";
 
 function CustomTabBar({ state, descriptors, navigation }: any) {
   return (
@@ -82,9 +84,21 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 }
 
 export default function RootLayout() {
-  const [token, setToken] = useState<string | null>(null);
-  const [onboardingComplete, setOnboardingComplete] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  return (
+    <AuthProvider>
+      <RootLayoutContent />
+    </AuthProvider>
+  );
+}
+
+function RootLayoutContent() {
+  const {
+    token,
+    onboardingComplete,
+    loading: checkingAuth,
+    signIn,
+    completeOnboarding,
+  } = useAuth();
 
   // Auth flow states
   const [currentView, setCurrentView] = useState<"login" | "register" | "onboarding_slides" | "onboarding_form">("login");
@@ -107,21 +121,12 @@ export default function RootLayout() {
   const [height, setHeight] = useState("");
   const [chronicConditions, setChronicConditions] = useState("");
 
+  // When the user signs out the overlay re-appears; make sure it starts at the login view.
   useEffect(() => {
-    const loadAuth = async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem("user_token");
-        const storedOnboarding = await AsyncStorage.getItem("user_onboarding_complete");
-        setToken(storedToken);
-        setOnboardingComplete(storedOnboarding === "true");
-      } catch (err) {
-        // Silent error
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
-    loadAuth();
-  }, []);
+    if (!token) {
+      setCurrentView("login");
+    }
+  }, [token]);
 
   const handleLogin = async () => {
     if (!loginUsername || !loginPassword) {
@@ -130,22 +135,19 @@ export default function RootLayout() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/auth/login", {
+      const res = await apiFetch("/api/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: loginUsername, password: loginPassword })
       });
       const data = await res.json();
       if (res.ok) {
-        await AsyncStorage.setItem("user_token", data.token);
-        setToken(data.token);
-        
-        const meRes = await fetch("http://localhost:8000/api/auth/me?token=" + data.token);
+        await signIn(data.token);
+
+        const meRes = await apiFetch("/api/auth/me?token=" + encodeURIComponent(data.token));
         if (meRes.ok) {
           const meData = await meRes.json();
           if (meData.profile && meData.profile.age > 0) {
-            await AsyncStorage.setItem("user_onboarding_complete", "true");
-            setOnboardingComplete(true);
+            await completeOnboarding();
           } else {
             setCurrentView("onboarding_slides");
           }
@@ -157,8 +159,7 @@ export default function RootLayout() {
       }
     } catch (err) {
       alert("Sunucuya bağlanılamadı. Çevrimdışı modda simüle ediliyor.");
-      await AsyncStorage.setItem("user_token", "mock_token_123");
-      setToken("mock_token_123");
+      await signIn(MOCK_TOKEN);
       setCurrentView("onboarding_slides");
     } finally {
       setLoading(false);
@@ -176,9 +177,8 @@ export default function RootLayout() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/auth/register", {
+      const res = await apiFetch("/api/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: regUsername,
           password: regPassword,
@@ -188,16 +188,14 @@ export default function RootLayout() {
       });
       const data = await res.json();
       if (res.ok) {
-        await AsyncStorage.setItem("user_token", data.token);
-        setToken(data.token);
+        await signIn(data.token);
         setCurrentView("onboarding_slides");
       } else {
         alert(data.detail || "Kayıt başarısız.");
       }
     } catch (err) {
       alert("Çevrimdışı modda simüle edilerek kayıt tamamlanıyor.");
-      await AsyncStorage.setItem("user_token", "mock_token_123");
-      setToken("mock_token_123");
+      await signIn(MOCK_TOKEN);
       setCurrentView("onboarding_slides");
     } finally {
       setLoading(false);
@@ -211,10 +209,9 @@ export default function RootLayout() {
     }
     setLoading(true);
     try {
-      const activeToken = token || (await AsyncStorage.getItem("user_token")) || "";
-      const res = await fetch("http://localhost:8000/api/auth/onboarding?token=" + activeToken, {
+      const activeToken = token || "";
+      const res = await apiFetch("/api/auth/onboarding?token=" + encodeURIComponent(activeToken), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           age: parseInt(age),
           gender: gender,
@@ -225,14 +222,12 @@ export default function RootLayout() {
         })
       });
       if (res.ok) {
-        await AsyncStorage.setItem("user_onboarding_complete", "true");
-        setOnboardingComplete(true);
+        await completeOnboarding();
       } else {
         alert("Onboarding kaydedilemedi.");
       }
     } catch (err) {
-      await AsyncStorage.setItem("user_onboarding_complete", "true");
-      setOnboardingComplete(true);
+      await completeOnboarding();
     } finally {
       setLoading(false);
     }
@@ -569,6 +564,12 @@ export default function RootLayout() {
         <Tabs.Screen name="departments" options={{ title: "Bölümler" }} />
         <Tabs.Screen name="history" options={{ title: "Geçmiş" }} />
         <Tabs.Screen name="profile" options={{ title: "Profil" }} />
+        {/* Profile sub-pages: hidden from the tab bar (CustomTabBar also filters them out),
+            reached via router.push() from the profile menu. */}
+        <Tabs.Screen name="personal-info" options={{ href: null }} />
+        <Tabs.Screen name="health-file" options={{ href: null }} />
+        <Tabs.Screen name="settings" options={{ href: null }} />
+        <Tabs.Screen name="help" options={{ href: null }} />
       </Tabs>
     </SafeAreaProvider>
   );

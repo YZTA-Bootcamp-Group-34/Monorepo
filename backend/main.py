@@ -1,37 +1,28 @@
 import os
-import json
 import jwt
 import bcrypt
 from datetime import datetime, timedelta
 from typing import List, Optional
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, Header, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-import google.generativeai as genai
 from dotenv import load_dotenv
 
 from .database import engine, Base, get_db
 from .models import User, DoctorProfile, Patient, Department, AppointmentHistory, MedicalHistoryItem, AISymptomFinding, AIProbability, AIAction
+from .ai import run_carepulse_pipeline
+from .ai.similarity import compute_history_alerts
+from .ai.llm import is_llm_active
 
 # Load environment variables
 load_dotenv()
 
-# Configure Google GenAI if API key exists
-api_key = os.getenv("GEMINI_API_KEY")
-gemini_active = False
-if api_key:
-    try:
-        genai.configure(api_key=api_key)
-        gemini_active = True
-        print("Gemini API successfully configured!")
-    except Exception as e:
-        print(f"Error configuring Gemini API: {e}")
-
-# Stateful chat session memories
-# session_id -> list of message history dicts
-chat_sessions = {}
+if is_llm_active():
+    print("Gemini API anahtarı bulundu: LangChain CarePulse pipeline aktif.")
+else:
+    print("GEMINI_API_KEY tanımlı değil: kural tabanlı fallback diyalog modu aktif.")
 
 # Create database tables if they do not exist
 Base.metadata.create_all(bind=engine)
@@ -52,6 +43,26 @@ JWT_SECRET = "preclinic_super_secret_key_12345"
 JWT_ALGORITHM = "HS256"
 
 security = HTTPBearer()
+
+def get_optional_patient(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)) -> Optional[Patient]:
+    """Bearer token varsa ve hasta rolündeyse Patient kaydını döndürür; yoksa None (anonim mod)."""
+    if not authorization or not authorization.lower().startswith("bearer "):
+        return None
+    payload = decode_access_token(authorization.split(" ", 1)[1])
+    if not payload:
+        return None
+    user = db.query(User).filter(User.id == payload.get("user_id")).first()
+    if not user or user.role != "patient":
+        return None
+    return db.query(Patient).filter(Patient.user_id == user.id).first()
+
+def resolve_token(token: Optional[str], authorization: Optional[str]) -> Optional[str]:
+    """Token'ı query parametresinden veya Authorization: Bearer başlığından çözer."""
+    if token:
+        return token
+    if authorization and authorization.lower().startswith("bearer "):
+        return authorization.split(" ", 1)[1]
+    return None
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
     token = credentials.credentials
@@ -170,8 +181,11 @@ def login_user(req: LoginRequest, db: Session = Depends(get_db)):
     return {"token": token, "role": user.role, "name": name}
 
 @app.get("/api/auth/me")
-def get_current_user_profile(token: str, db: Session = Depends(get_db)):
-    payload = decode_access_token(token)
+def get_current_user_profile(token: Optional[str] = None, authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
+    resolved = resolve_token(token, authorization)
+    if not resolved:
+        raise HTTPException(status_code=401, detail="Token bulunamadı. Lütfen giriş yapın.")
+    payload = decode_access_token(resolved)
     if not payload:
         raise HTTPException(status_code=401, detail="Geçersiz token. Lütfen tekrar giriş yapın.")
         
@@ -212,8 +226,11 @@ def get_current_user_profile(token: str, db: Session = Depends(get_db)):
     return {"id": user.id, "username": user.username, "role": user.role, "profile": profile_data}
 
 @app.post("/api/auth/onboarding")
-def complete_onboarding(token: str, req: OnboardingRequest, db: Session = Depends(get_db)):
-    payload = decode_access_token(token)
+def complete_onboarding(req: OnboardingRequest, token: Optional[str] = None, authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
+    resolved = resolve_token(token, authorization)
+    if not resolved:
+        raise HTTPException(status_code=401, detail="Token bulunamadı. Lütfen giriş yapın.")
+    payload = decode_access_token(resolved)
     if not payload:
         raise HTTPException(status_code=401, detail="Geçersiz token.")
         
@@ -359,6 +376,9 @@ class ChatResponse(BaseModel):
     sender: str  # "bot" or "user"
     text: str
     options: List[str] = []
+    department: Optional[str] = None
+    urgency: Optional[str] = None
+    referral_created: bool = False
 
 # --- Endpoints ---
 
@@ -366,82 +386,14 @@ class ChatResponse(BaseModel):
 def get_patients(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return db.query(Patient).all()
 
-import math
-import re
-
-def get_cosine_similarity(text1: str, text2: str) -> float:
-    words = re.compile(r'\w+')
-    
-    def get_word_freq(text: str):
-        freq = {}
-        for word in words.findall(text.lower()):
-            freq[word] = freq.get(word, 0) + 1
-        return freq
-
-    vec1 = get_word_freq(text1)
-    vec2 = get_word_freq(text2)
-
-    intersection = set(vec1.keys()) & set(vec2.keys())
-    dot_product = sum([vec1[x] * vec2[x] for x in intersection])
-
-    sum1 = sum([vec1[x]**2 for x in vec1.keys()])
-    sum2 = sum([vec2[x]**2 for x in vec2.keys()])
-    denominator = math.sqrt(sum1) * math.sqrt(sum2)
-
-    if not denominator:
-        return 0.0
-    return float(dot_product) / denominator
-
-def expand_medical_terms(text: str) -> str:
-    expansions = {
-        "hipertansiyon": "kalp tansiyon damar kan",
-        "egzama": "cilt deri kasinti dokuntu",
-        "diyabet": "seker insulin endokrin",
-        "nefes darligi": "akciger solunum oksijen kalp",
-        "gogus sikismasi": "kalp damar kriz agri",
-        "bas agrisi": "beyin migren sinir",
-        "reflu": "mide sindirim girtlak yanma"
-    }
-    lowered = text.lower()
-    expanded = lowered
-    for term, exp in expansions.items():
-        if term in lowered:
-            expanded += " " + exp
-    return expanded
-
 @app.get("/api/patients/{patient_id}", response_model=PatientDetailSchema)
 def get_patient_detail(patient_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
-    
-    # Calculate similarity alert flags (Uzun Süreli Medikal Hafıza)
-    alerts = []
-    
-    # Extract current symptom texts
-    symptom_texts = [f.finding for f in patient.symptom_findings]
-    current_symptoms_str = " ".join(symptom_texts)
-    
-    if current_symptoms_str:
-        # Compare with each medical history item
-        for item in patient.medical_history:
-            history_str = f"{item.category} {item.title} {item.details}"
-            
-            # Run cosine similarity on expanded text roots
-            current_expanded = expand_medical_terms(current_symptoms_str)
-            history_expanded = expand_medical_terms(history_str)
-            similarity = get_cosine_similarity(current_expanded, history_expanded)
-            
-            # If similarity is significant, generate warning alert
-            if similarity > 0.12:
-                alert_msg = (
-                    f"KRİTİK UYARI: Hastanın geçmişindeki '{item.title}' öyküsü ile "
-                    f"güncel şikayetleri ({', '.join(symptom_texts[:2])}) arasında "
-                    f"bağlamsal benzerlik (%{int(similarity * 100)}) tespit edilmiştir."
-                )
-                alerts.append(alert_msg)
-                
-    patient.alerts = alerts
+
+    # Uzun Süreli Medikal Hafıza: kosinüs benzerliği tabanlı uyarılar (backend/ai/similarity.py)
+    patient.alerts = compute_history_alerts(patient)
     return patient
 
 @app.get("/api/departments", response_model=List[DepartmentSchema])
@@ -547,285 +499,29 @@ def submit_patient_followup(patient_id: int, data: FollowUpSubmitSchema, db: Ses
     }
 
 @app.post("/api/chat", response_model=ChatResponse)
-def chat_with_bot(chat: ChatMessage, db: Session = Depends(get_db)):
+def chat_with_bot(
+    chat: ChatMessage,
+    db: Session = Depends(get_db),
+    patient: Optional[Patient] = Depends(get_optional_patient),
+):
+    """CarePulse sohbet ucu.
+
+    LangChain tabanlı çok aşamalı pipeline'a delege eder (backend/ai/pipeline.py):
+    kalıcı DB hafızası -> canlı bağlam -> yapılandırılmış triyaj -> SOAP raporu -> sevk kaydı.
+    Kimliği doğrulanmış hasta varsa sevk kaydı doğrudan onun dosyasına işlenir.
+    """
     session_id = chat.session_id or "default"
-    text = chat.message.strip()
-
-    # Initialize chat session history
-    if session_id not in chat_sessions:
-        chat_sessions[session_id] = []
-    
-    history = chat_sessions[session_id]
-    
-    # Restart triggers
-    if text.lower() in ["yeni", "yeniden başlat", "reset", "iptal et", "ana menü"]:
-        chat_sessions[session_id] = []
-        return ChatResponse(
-            sender="bot",
-            text="Sohbet sıfırlandı. CarePulse asistanına hoş geldiniz! Bugün herhangi bir belirtiniz veya şikayetiniz var mı?",
-            options=["Başım ağrıyor", "Göğüs sıkışması var", "Randevularım"]
-        )
-
-    # Append user message
-    history.append({"role": "user", "content": text})
-
-    if gemini_active:
-        try:
-            # Build conversation context for Gemini
-            history_context = ""
-            for msg in history[:-1]:
-                role_label = "Hasta" if msg["role"] == "user" else "CarePulse Asistanı"
-                history_context += f"{role_label}: {msg['content']}\n"
-
-            prompt = f"""
-Sen PreClinic sisteminin otonom klinik asistanı "CarePulse" adlı yapay zekasın. 
-Görevin, hastanın Türkçe olarak girdiği doğal dildeki semptomları analiz etmek, hastaya geçmiş olsun dileklerini sunmak, şikayetlerini netleştirmek için kısa sorular sormak ve en doğru polikliniğe yönlendirme yapmaktır.
-
-Aşağıdaki kurallara kesinlikle uy:
-1. Hastaya her zaman dostça, tıp terminolojisinden uzak ancak profesyonel bir Türkçe ile yanıt ver.
-2. Hastanın şikayetlerini çözümlerken aşağıdaki polikliniklerden birini seçmelisin:
-   - "Kardiyoloji Polikliniği" (Göğüs ağrısı, sıkışma, sol kolda uyuşma vb.)
-   - "Nöroloji Polikliniği" (Şiddetli baş ağrıları, uyuşmalar, kas/sinir problemleri)
-   - "Dermatoloji Polikliniği" (Cilt lekeleri, egzama, döküntüler)
-   - "Göz Hastalıkları Polikliniği" (Bulanık görme, ağrı, kuruluk)
-   - "Dahiliye Polikliniği" (Mide şikayetleri, genel ateş, halsizlik vb.)
-   - "Onkoloji Polikliniği" (Kanser tarama ve takip)
-3. Eğer hasta belirtilerini tam olarak anlatmadıysa veya konuşma başlangıç aşamasındaysa, "department" alanını null bırak, "text" alanında ek sorular sor ve "options" alanına 2-3 adet kısa seçenek sun.
-4. Eğer hasta belirtilerini netleştirdiyse ve sevk kararı verildiyse (örneğin randevu almak istediğini belirttiyse veya kritik şikayetler tamamsa):
-   - "department" alanına önerdiğin polikliniğin adını yaz (Örn: "Gastroenteroloji Polikliniği" veya yukarıdaki listelenenler).
-   - "symptoms" dizisine hastanın şikayetlerini klinik terimlerle yaz (Örn: ["Akut retrosternal yanma hissi", "Bulantı"]).
-   - "probabilities" dizisine olasılık oranlarını ve hastalık tahminlerini ekle (Örn: [{{"condition": "Reflü", "probability": 75}}]).
-   - "tests" alanına yapılması gereken öncelikli tahlil/tetkikleri yaz (Örn: "Endoskopi, Karın USG").
-   - "urgency" alanını "ACİL", "RUTİN KONTROL" veya "TAKİP" olarak belirle.
-   - "criticality" alanını 0.0 ile 1.0 arasında bir değer olarak belirle (Örn: Acil durumlar için 0.85, rutin için 0.25).
-5. Konuşma akışını sürdürmek için "options" alanında her zaman hastanın seçebileceği buton isimleri öner.
-
-Konuşma Geçmişi:
-{history_context}
-
-Hastanın Son Mesajı:
-"{text}"
-
-Yanıtını YALNIZCA ham JSON nesnesi olarak döndür. Markdown etiketleri (```json vb.) kullanma. JSON şeması tam olarak şu şekilde olmalıdır:
-{{
-  "text": "hastaya verilecek diyalog cevabı",
-  "options": ["seçenek1", "seçenek2", "seçenek3"],
-  "symptoms": ["semptom1", "semptom2"] veya null,
-  "department": "Poliklinik Adı" veya null,
-  "probabilities": [{{ "condition": "Hastalık Adı", "probability": 80 }}] veya null,
-  "tests": "tetkik1, tetkik2" veya null,
-  "urgency": "ACİL" veya "RUTİN KONTROL" veya "TAKİP" veya null,
-  "criticality": 0.5 veya null
-}}
-"""
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(prompt)
-            
-            resp_text = response.text.strip()
-            if resp_text.startswith("```"):
-                lines = resp_text.split("\n")
-                if lines[0].startswith("```"):
-                    lines = lines[1:]
-                if lines[-1].startswith("```"):
-                    lines = lines[:-1]
-                resp_text = "\n".join(lines).strip()
-            
-            ai_data = json.loads(resp_text)
-            
-            bot_reply = ai_data.get("text", "Anlaşıldı. Belirtilerinizi kaydettim.")
-            options = ai_data.get("options", ["Geri Dön"])
-            
-            # Append model message to history
-            history.append({"role": "model", "content": bot_reply})
-            
-            # Write to database if diagnostic routing completed
-            dept = ai_data.get("department")
-            symptoms = ai_data.get("symptoms")
-            
-            if dept and symptoms and len(symptoms) > 0:
-                p_name = f"Sanal Hasta ({dept.split()[0]})"
-                tc_suffix = str(abs(hash(p_name)))[-4:]
-                tc_no = f"12345678{tc_suffix}"
-                
-                exists = db.query(Patient).filter(Patient.name == p_name).first()
-                if not exists:
-                    urgency = ai_data.get("urgency", "RUTİN KONTROL")
-                    criticality = ai_data.get("criticality", 0.3)
-                    
-                    new_patient = Patient(
-                        name=p_name,
-                        tc_no=tc_no,
-                        age=30,
-                        gender="Erkek",
-                        blood_type="A Rh(+)",
-                        weight=70.0,
-                        height=175.0,
-                        chronic_conditions="Yok",
-                        status=urgency,
-                        criticality=criticality,
-                        son_randevu="Bugün (AI Sevk)",
-                        avatar_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
-                    )
-                    db.add(new_patient)
-                    db.commit()
-                    
-                    m1 = MedicalHistoryItem(
-                        patient_id=new_patient.id,
-                        category="Klinik Tanı",
-                        title="AI Ön Anamnez Raporu",
-                        details="Sanal Asistan üzerinden otonom sevk kaydı oluşturuldu.",
-                        color_tag="blue"
-                    )
-                    db.add(m1)
-
-                    for sym in symptoms:
-                        f = AISymptomFinding(patient_id=new_patient.id, finding=sym, checked=True)
-                        db.add(f)
-
-                    probs = ai_data.get("probabilities", [])
-                    for p in probs:
-                        cond = p.get("condition", "Tanımlanamayan Bulgular")
-                        pr = p.get("probability", 50)
-                        pr_item = AIProbability(patient_id=new_patient.id, condition=cond, probability=pr)
-                        db.add(pr_item)
-
-                    tests = ai_data.get("tests", "Genel Tetkik")
-                    act = AIAction(
-                        patient_id=new_patient.id,
-                        recommended_dept=dept,
-                        required_tests=tests
-                    )
-                    db.add(act)
-                    db.commit()
-                    
-                    bot_reply = f"{bot_reply}\n\n[Sistem Notu: Randevunuz başarıyla oluşturuldu ve {dept} hekim paneline sevk kaydı yapıldı.]"
-
-            return ChatResponse(
-                sender="bot",
-                text=bot_reply,
-                options=options
-            )
-            
-        except Exception as e:
-            print(f"Error processing Gemini response: {e}")
-            # Fall back to simulated flow if error parsing or calling
-
-    # Fallback simulated dialogues
-    text_low = text.lower()
-    if not text_low or "merhaba" in text_low or "selam" in text_low:
-        bot_reply = "Merhaba! Ben CarePulse. Bugün size nasıl yardımcı olabilirim? Herhangi bir belirtiniz veya sağlık sorununuz var mı?"
-        options = ["Başım ağrıyor", "Göğüs sıkışması var", "Randevularım"]
-    elif "başım ağrıyor" in text_low or "halsiz" in text_low or "belirti" in text_low:
-        bot_reply = "Geçmiş olsun. Bu belirtiler ne zaman başladı? Ayrıca ateşiniz var mı?"
-        options = ["Ateşim var", "Bugün başladı", "Randevu al"]
-    elif "ateş" in text_low or "ateşim var" in text_low:
-        bot_reply = "Anladım. Ateş derecenizi ölçtünüz mü? Baş ağrınızın şiddeti nedir?"
-        options = ["Şiddetli Baş Ağrısı", "Hafif, geçici", "Geri Dön"]
-    elif "şiddetli baş" in text_low:
-        bot_reply = "Şikayetleriniz şiddetli baş ağrısı ve halsizliği işaret ediyor. Sizi öncelikli olarak Nöroloji departmanına yönlendirmemi ister misiniz?"
-        options = ["Nöroloji Randevusu Al", "AI Analizini Kaydet", "İptal Et"]
-    elif "göğüs" in text_low or "sıkışma" in text_low:
-        bot_reply = "Göğüs sıkışması kritik bir semptomdur. Sol kolda uyuşma, nefes darlığı veya soğuk terleme eşlik ediyor mu?"
-        options = ["Nefes darlığı var", "Sadece sıkışma", "Kardiyoloji Randevusu Al"]
-    elif "randevu" in text_low:
-        bot_reply = "Hangi bölüm için randevu almak istersiniz?"
-        options = ["Kardiyoloji", "Nöroloji", "Dermatoloji", "Göz Hastalıkları", "Dahiliye"]
-    elif "kardiyoloji" in text_low:
-        bot_reply = "Kardiyoloji polikliniği için şu an 12 aktif doktorumuz bulunmaktadır. Randevunuzu onaylamak ister misiniz?"
-        options = ["Randevuyu Onayla", "Geri Dön"]
-    elif "nöroloji" in text_low:
-        bot_reply = "Nöroloji polikliniği için en yakın müsaitlik Yarın saat 09:00'dadır. Randevu oluşturulsun mu?"
-        options = ["Onayla", "Geri Dön"]
-    elif "onayla" in text_low or "nöroloji randevusu al" in text_low:
-        exists = db.query(Patient).filter(Patient.name == "Sanal Asistan (Nöroloji)").first()
-        if not exists:
-            new_patient = Patient(
-                name="Sanal Asistan (Nöroloji)",
-                tc_no="12345678999",
-                age=34,
-                gender="Erkek",
-                blood_type="A Rh(+)",
-                weight=72.0,
-                height=178.0,
-                chronic_conditions="Astım",
-                status="RUTİN KONTROL",
-                criticality=0.35,
-                son_randevu="Yarın 09:00",
-                avatar_url="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
-            )
-            db.add(new_patient)
-            db.commit()
-            m1 = MedicalHistoryItem(
-                patient_id=new_patient.id,
-                category="Klinik Tanı",
-                title="Zonklayıcı Baş Ağrısı",
-                details="Aralıklı migren atağı şüphesiyle takip ediliyor.",
-                color_tag="blue"
-            )
-            db.add(m1)
-            f1 = AISymptomFinding(patient_id=new_patient.id, finding="Şiddetli Baş Ağrısı", checked=True)
-            f2 = AISymptomFinding(patient_id=new_patient.id, finding="Halsizlik", checked=True)
-            db.add_all([f1, f2])
-            pr1 = AIProbability(patient_id=new_patient.id, condition="Migren Atak", probability=78)
-            db.add(pr1)
-            act = AIAction(
-                patient_id=new_patient.id,
-                recommended_dept="Nöroloji Polikliniği",
-                required_tests="Kranial MR, Hemogram"
-            )
-            db.add(act)
-            db.commit()
-        bot_reply = "Nöroloji polikliniği için randevu kaydınız ve AI semptom analiz raporunuz oluşturuldu! Hekim ön bilgilendirme paneline başarıyla gönderildi."
-        options = ["Ana Menü"]
-    elif "randevuyu onayla" in text_low or "kardiyoloji randevusu al" in text_low:
-        exists = db.query(Patient).filter(Patient.name == "Sanal Asistan (Kardiyoloji)").first()
-        if not exists:
-            new_patient = Patient(
-                name="Sanal Asistan (Kardiyoloji)",
-                tc_no="12345678998",
-                age=58,
-                gender="Erkek",
-                blood_type="0 Rh(+)",
-                weight=85.0,
-                height=173.0,
-                chronic_conditions="Tip 2 Diyabet",
-                status="ACİL",
-                criticality=0.9,
-                son_randevu="Bugün (Acil Sevk)",
-                avatar_url="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150"
-            )
-            db.add(new_patient)
-            db.commit()
-            m1 = MedicalHistoryItem(
-                patient_id=new_patient.id,
-                category="Klinik Tanı",
-                title="Tip 2 Diyabet",
-                details="Oral antidiabetik tedavi altında.",
-                color_tag="blue"
-            )
-            db.add(m1)
-            f1 = AISymptomFinding(patient_id=new_patient.id, finding="Göğüste sıkışma ve baskı hissi", checked=True)
-            f2 = AISymptomFinding(patient_id=new_patient.id, finding="Sol kola yayılan uyuşma", checked=True)
-            db.add_all([f1, f2])
-            pr1 = AIProbability(patient_id=new_patient.id, condition="Akut Koroner Sendrom", probability=85)
-            db.add(pr1)
-            act = AIAction(
-                patient_id=new_patient.id,
-                recommended_dept="Kardiyoloji Polikliniği",
-                required_tests="Troponin I Testi, Acil EKG, Eko"
-            )
-            db.add(act)
-            db.commit()
-        bot_reply = "Kardiyoloji (Acil) polikliniği randevunuz ve AI klinik ön raporunuz başarıyla oluşturuldu! Hekimin ekranına anlık sevk kaydı düştü."
-        options = ["Ana Menü"]
-    else:
-        bot_reply = "Sizi anladım. Belirtilerinizi daha detaylı açıklayabilir veya doğrudan bölümler menüsünden randevu alabilirsiniz."
-        options = ["Ana Menü", "Yardım Al"]
-
-    history.append({"role": "model", "content": bot_reply})
+    result = run_carepulse_pipeline(
+        db=db,
+        message=chat.message,
+        session_id=session_id,
+        patient=patient,
+    )
     return ChatResponse(
         sender="bot",
-        text=bot_reply,
-        options=options
+        text=result["text"],
+        options=result.get("options", []),
+        department=result.get("department"),
+        urgency=result.get("urgency"),
+        referral_created=result.get("referral_created", False),
     )
-

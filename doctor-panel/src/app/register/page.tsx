@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Lock, Mail, User, ArrowRight, Stethoscope, AlertCircle } from "lucide-react";
+import { apiFetch, setSession } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8000/api/auth/register", {
+      const res = await apiFetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -42,10 +43,8 @@ export default function RegisterPage() {
 
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
-        localStorage.setItem("doctor_name", data.name);
-        
+        setSession(data.token, data.role, data.name);
+
         // Redirect to onboarding to complete clinical credentials
         router.push("/onboarding");
       } else {
