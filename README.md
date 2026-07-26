@@ -472,8 +472,7 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
   * **Ekip İçi Sinerji:** Ekip üyelerinin bu sprintteki yüksek motivasyonu ve aktif katılımı sayesinde hem kodlama hem de sunum/video hazırlık süreçleri zaman planlamasına uygun şekilde yürütülmüştür.
   * **Multidisipliner Çalışma:** Tasarım ekibinin iş yükünün azalmasıyla birlikte yazılım ve test süreçlerine verdikleri aktif destek, projenin tam zamanında bitirilmesinde ve stabil çalışmasında büyük rol oynamıştır.
   * **Kapanış Çıktıları:** Sunum dosyası ve YouTube tanıtım videosu gibi projenin son adımları da eksiksiz şekilde hazırlanarak teslim aşamasına gelinmiştir.
-
-
+  *  **Toplantı ve İletişim Düzeni:** Backend entegrasyonu, API bağlantıları, test süreçleri, YouTube tanıtım videosu ve kapanış sunumu gibi projenin tüm son adımlarını kusursuz koordine etmek adına toplantılar periyodik olarak gerçekleştirilmiştir. Bu sıkı iletişim düzeni sayesinde tüm süreçler anlık olarak senkronize edilmiş ve projenin her detayı başarıyla bitirilmiştir.
 
 
 
