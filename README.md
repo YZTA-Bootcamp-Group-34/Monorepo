@@ -452,7 +452,7 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 
  * **Sprint board update:** Sprint board screenshot: Proje yönetim sürecimizi ve görev dağılımlarımızı takip ettiğimiz Trello panomuza ulaşmak için: [Tıklayınız](https://trello.com/b/1D4BDI4I/grup34)*
  * 
-<img width="800" height="800" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/379bdfa8ba4d43983398884ae18304ce95e8e3c2/trello3.png">
+<img width="800" height="800" src="https://github.com/YZTA-Bootcamp-Group-34/Monorepo/blob/0fc7a6fdbf4a74814afe7d0e192e08daaa2f4049/trello3.png">
 
 
 
