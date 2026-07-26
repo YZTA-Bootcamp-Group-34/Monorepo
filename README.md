@@ -260,14 +260,66 @@ her hasta mesajını çok aşamalı bir klinik karar hattından geçiren bir **t
 
 ```mermaid
 flowchart TD
-    MSG[Hasta Mesajı] --> MEM[1. Kalıcı Hafıza<br/>SQLite chat_messages tablosundan<br/>session diyalog geçmişi yüklenir]
-    MEM --> CTX[2. Canlı Bağlam Enjeksiyonu<br/>Poliklinik kataloğu + doluluk durumu<br/>Hasta biyometrisi ve tıbbi özgeçmişi]
-    CTX --> TRIAGE[3. Triyaj Zinciri LCEL<br/>prompt | Gemini | PydanticOutputParser<br/>→ TriageDecision yapılandırılmış karar]
-    TRIAGE -->|department = null| ASK[Netleştirici soru + hızlı yanıt butonları]
-    TRIAGE -->|sevk kararı netleşti| SOAP[4. SOAP Zinciri<br/>Diyalog dökümünden S-O-A-P raporu<br/>+ ICD-10 kodları üretilir]
-    SOAP --> PERSIST[5. Sevk Kaydı<br/>Semptomlar, olasılıklar, tetkikler ve<br/>SOAP raporu hasta dosyasına yazılır]
-    PERSIST --> PANEL[🩺 Hekim Paneline Anlık Düşer]
-    TRIAGE -.->|LLM hatası / anahtar yok| FB[Kural Tabanlı Fallback<br/>Çevrimdışı demo diyaloğu]
+    subgraph INPUT["1. Giriş & Tetikleyici Katmanı"]
+        A["👤 Hasta Mesajı<br/>(POST /api/chat)"] --> B{"Sıfırlama Tetikleyicisi?<br/>(yeni, reset, iptal)"}
+        B -- "Evet" --> B_RESET["Hafıza Sıfırla &<br/>Karşılama Mesajı Dön"]
+    end
+
+    subgraph CONTEXT["2. Kalıcı Hafıza & Canlı Bağlam Katmanı"]
+        B -- "Hayır" --> MEM["💾 SQLite Diyalog Hafızası<br/>(chat_messages tablosu)"]
+        MEM --> LC_MEM["LangChain Messages<br/>(HumanMessage / AIMessage)"]
+        
+        DB_DEP[("🏥 Canlı Poliklinik Kataloğu<br/>(departments tablosu)")] --> TOOL_DEP["tools.get_department_catalog()"]
+        DB_PAT[("📋 Hasta Profili & Özgeçmiş<br/>(patients tablosu)")] --> TOOL_PAT["tools.get_patient_context()"]
+        
+        HIST_DB[("📚 Geçmiş Tanılar & Semptomlar")] --> COS_SIM["similarity.cosine_similarity()<br/>Uzun Süreli Medikal Hafıza Motoru"]
+    end
+
+    subgraph LCEL_TRIAGE["3. LangChain LCEL Triyaj Karar Hattı (triage_chain)"]
+        LC_MEM & TOOL_DEP & TOOL_PAT & COS_SIM --> PROMPT1["ChatPromptTemplate<br/>TRIAGE_SYSTEM_PROMPT + format_instructions"]
+        
+        PROMPT1 --> MODEL_FALLBACK{"LLM Model Fabrikası (llm.py)<br/>Model Fallback Zinciri"}
+        MODEL_FALLBACK -- "1. Öncelik" --> M1["gemini-flash-latest"]
+        MODEL_FALLBACK -- "Hata / Timeout" --> M2["gemini-1.5-flash"]
+        MODEL_FALLBACK -- "Hata / Timeout" --> M3["gemini-1.5-pro"]
+        
+        M1 & M2 & M3 --> PARSER1["PydanticOutputParser<br/>(TriageDecision)"]
+        
+        PARSER1 --> DECISION{"Triyaj Kararı Net Mi?<br/>(department != null)"}
+    end
+
+    subgraph OFFLINE_FALLBACK["4. Çevrimdışı Kural Tabanlı Motor (fallback.py)"]
+        MODEL_FALLBACK -- "Tüm Modeller Başarısız / Anahtar Yok" --> FB_ENGINE["run_fallback_dialogue()<br/>Kural Tabanlı Diyalog"]
+        FB_ENGINE --> RESP_FB["Çevrimdışı Yanıt + Butonlar"]
+    end
+
+    subgraph CLARIFICATION["5. Netleştirme Akışı"]
+        DECISION -- "Hayır (Eksik Bilgi)" --> RESP_ASK["Netleştirici Soru + Hızlı Yanıt Butonları<br/>(options)"]
+    end
+
+    subgraph LCEL_SOAP["6. LangChain LCEL SOAP Rapor Zinciri (soap_chain)"]
+        DECISION -- "Evet (Sevk Kararı Verildi)" --> TRANSCRIPT["Diyalog Dökümü + Karar Metrikleri"]
+        TRANSCRIPT --> PROMPT2["ChatPromptTemplate<br/>SOAP_SYSTEM_PROMPT + format_instructions"]
+        PROMPT2 --> LLM_SOAP["Gemini Chat Model (temp=0.2)"]
+        LLM_SOAP --> PARSER2["PydanticOutputParser<br/>(SOAPReport)"]
+        PARSER2 --> SOAP_DATA["Klinik SOAP Raporu + ICD-10 Kodları"]
+    end
+
+    subgraph PERSISTENCE["7. Veritabanı Kalıcılığı & Hekim Paneli"]
+        SOAP_DATA & DECISION --> PERSIST_FUNC["pipeline._persist_referral()"]
+        
+        PERSIST_FUNC --> DB_STATUS["patients.status (ACİL / RUTİN / TAKİP)"]
+        PERSIST_FUNC --> DB_CRIT["patients.criticality (0.0 - 1.0)"]
+        PERSIST_FUNC --> DB_SYM["ai_symptom_findings (Bulgular)"]
+        PERSIST_FUNC --> DB_PROB["ai_probabilities (Olası Tanılar)"]
+        PERSIST_FUNC --> DB_ACT["ai_actions (Önerilen Sevk & Tetkikler)"]
+        PERSIST_FUNC --> DB_MED["medical_history_items (SOAP + ICD-10)"]
+        
+        DB_STATUS & DB_CRIT & DB_SYM & DB_PROB & DB_ACT & DB_MED --> DOC_PANEL["🩺 Next.js Hekim Paneline Anlık Düşer<br/>(/patients & Bildirim Zili)"]
+    end
+
+    RESP_FB & RESP_ASK & DOC_PANEL --> SAVE_MEM["SQLite chat_messages tablosuna<br/>asistan yanıtı kaydedilir"]
+    SAVE_MEM --> END_RESP["📱 Mobil Uygulamaya JSON Yanıtı<br/>(text, options, department, urgency)"]
 ```
 
 **Mimarinin temel özellikleri:**
