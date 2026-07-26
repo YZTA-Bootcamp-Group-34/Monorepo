@@ -475,6 +475,9 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
   *  **Toplantı ve İletişim Düzeni:** Backend entegrasyonu, API bağlantıları, test süreçleri, YouTube tanıtım videosu ve kapanış sunumu gibi projenin tüm son adımlarını kusursuz koordine etmek adına toplantılar periyodik olarak gerçekleştirilmiştir. Bu sıkı iletişim düzeni sayesinde tüm süreçler anlık olarak senkronize edilmiş ve projenin her detayı başarıyla bitirilmiştir.
 
 
+**Youtube videosu linki:**.
+
+
 
 
 
