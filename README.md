@@ -467,7 +467,11 @@ Tüm servisleri besleyen, JWT Bearer yetkilendirmesiyle korunan SQLite tabanlı 
 
 
 * **Sprint Retrospective:**
-
+  * **Proje Kapanışı ve Genel Başarı:** PreClinic projesinin son sprinti olan Sprint 3 başarıyla tamamlanmış ve uygulamanın tüm fonksiyonları çalışır vaziyette teslim edilmiştir. 
+  * **Entegrasyon ve Test Süreci:** Bir önceki sprintte devralınan online sistem/veri senkronizasyonu altyapısı bu süreçte tamamen çözülmüş, backend ve API bağlantıları kurularak tüm sistem uçtan uca test edilmiştir.
+  * **Ekip İçi Sinerji:** Ekip üyelerinin bu sprintteki yüksek motivasyonu ve aktif katılımı sayesinde hem kodlama hem de sunum/video hazırlık süreçleri zaman planlamasına uygun şekilde yürütülmüştür.
+  * **Multidisipliner Çalışma:** Tasarım ekibinin iş yükünün azalmasıyla birlikte yazılım ve test süreçlerine verdikleri aktif destek, projenin tam zamanında bitirilmesinde ve stabil çalışmasında büyük rol oynamıştır.
+  * **Kapanış Çıktıları:** Sunum dosyası ve YouTube tanıtım videosu gibi projenin son adımları da eksiksiz şekilde hazırlanarak teslim aşamasına gelinmiştir.
 
 
 
