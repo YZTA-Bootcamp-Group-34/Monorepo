@@ -762,7 +762,7 @@ PreClinic projesinin tüm çalışma mantığını, mobil hasta uygulamasını, 
 
 
 
-🔗 **Sunum Pdf:**[Tıklayınız](https://canva.link/ubfgghe56g99s10)
+🔗 **Sunum Pdf Linki:**[Tıklayınız](https://canva.link/ubfgghe56g99s10)
 
 
 
