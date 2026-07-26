@@ -759,7 +759,10 @@ PreClinic projesinin tüm çalışma mantığını, mobil hasta uygulamasını, 
 </p>
 
 🔗 **YouTube Video Linki:** [https://www.youtube.com/watch?v=nNC-Fhe0jNU](https://www.youtube.com/watch?v=nNC-Fhe0jNU)
-🔗 **Sunum Pdf:** [https://canva.link/ubfgghe56g99s10)
+
+
+
+🔗 **Sunum Pdf:**[Tıklayınız](https://canva.link/ubfgghe56g99s10)
 
 
 
